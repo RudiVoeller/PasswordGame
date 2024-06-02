@@ -23,7 +23,6 @@ async function createPasswords() {
     } else {
         console.error('Fetching passwords failed');
 
-
     }
 }
 
@@ -93,5 +92,13 @@ async function onSolve() {
 
     document.getElementById("points").innerHTML = points + " von 10 Punkten";
 
-
 }
+
+window.onload = () => {
+    checkToken().then(isValid => {
+        if (!isValid) {
+            // Weiterleitung zur Login-Seite oder Anzeige einer Meldung
+            console.log('Redirecting to login page...');
+        }
+    });
+};s

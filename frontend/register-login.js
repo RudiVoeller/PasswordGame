@@ -22,10 +22,20 @@ async function onLogin() {
     });
 
     if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
+        console.log('User logged in');
     } else {
         console.error('Login failed');
     }
 
+}
+async function onLogout() {
+    const response = await fetch('http://localhost:3000/logout', {
+        method: 'POST',
+    });
+
+    if (response.ok) {
+        console.log('User logged out');
+    } else {
+        console.error('Logout failed');
+    }
 }

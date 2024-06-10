@@ -7,6 +7,8 @@ const app = express({strict: false});
 const port = 3000;
 const cors = require('cors');
 const fs = require('fs');
+const cookieParser = require('cookie-parser');
+
 const users = [];
 const {createProxyMiddleware} = require('http-proxy-middleware'); //Just for development
 
@@ -15,6 +17,7 @@ const corsOptions = {
     credentials: true,            //access-control-allow-credentials:true
     optionSuccessStatus: 200,
 }
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -66,11 +69,20 @@ app.post('/login', async (req, res) => {
     const {email, password} = req.body;
     const user = users.find(u => u.email === email);
     if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({email: user.email}, jwtSecret, {expiresIn: '1h'});
+        const token = jwt.sign({email: user.email}, jwtSecret, {expiresIn: '12h'});
+        res.cookie('token', token, {httpOnly: true});
         res.json({token});
     } else {
         res.status(401).send('Invalid credentials');
     }
+});
+
+app.post('/logout', (req, res) => {
+    console.log("Logout")
+    res.clearCookie('token'); // Löschen Sie das Cookie
+    res.status(200).send('User logged out');
+
+
 });
 
 // Password reset request endpoint

@@ -7,19 +7,34 @@ const app = express({strict: false});
 const port = 3000;
 const cors = require('cors');
 const fs = require('fs');
+const path = require('path');
 const cookieParser = require('cookie-parser');
-
-const users = [];
+const session = require('express-session')
 const {createProxyMiddleware} = require('http-proxy-middleware'); //Just for development
+
+const usersFilePath = path.join(__dirname, '..','database', 'users.json'); // Pfad zur JSON-Datei mit Benutzerdaten
+                                                          // später ersetzen durch Datenbankabfrage
 
 const corsOptions = {
     origin: '*',
     credentials: true,            //access-control-allow-credentials:true
     optionSuccessStatus: 200,
 }
+
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(cors());
+
+// Sitzungseinrichtung
+app.use(session({
+    secret: 'geheimeSitzungsSchluessel', // ändere dies in einen geheimen Schlüssel
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // auf true setzen, wenn https verwendet wird
+}));
+
+// Statische Dateien aus dem 'public'-Verzeichnis bereitstellen
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 if (fs.existsSync('passwords.json')) {
     try {
@@ -35,14 +50,16 @@ let passwords = JSON.parse(data);
 let goodPasswords = passwords.goodPasswords;
 let badPasswords = passwords.badPasswords;
 
-// app.use('/', createProxyMiddleware({
-//     target: 'http://localhost:63342', // Ziel-URL
-//     changeOrigin: true,
-//     onProxyRes: function (proxyRes, req, res) {
-//         proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-//     }
-// }));
-// JWT Secret
+// Middleware zur Überprüfung der Session für geschützte Routen
+function requireLogin(req, res, next) {
+    if (req.session.loggedIn) {
+        next();
+    } else {
+        console.log('weiterleitung abgebrochen, nutzer ist nicht angemeldet.')
+        //res.redirect('/'); // Zur Login-Seite umleiten, wenn nicht angemeldet
+        next();
+    }
+}
 const jwtSecret = 'your_jwt_secret_key';
 
 // Nodemailer setup
@@ -53,6 +70,43 @@ const transporter = nodemailer.createTransport({
         pass: 'your_email_password'
     }
 });
+
+// Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
+  })
+
+// Aufruf der html Seiten
+app.get('/123', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
+  })
+
+// Geschützte Route -> Zugriff nur wenn Benutzer angemeldet
+app.get('/good_bad_password', requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
+});
+
+// Rückgabe der Stylesheets
+app.get('/login.css', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.css'));
+  })
+app.get('/password_strength_sim.css', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.css'));
+  })
+  app.get('/good_bad_password.css', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.css'));
+  })
+
+ // Rückgabe der client-js Dateien
+app.get('/register-login.js', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'register-login.js'));
+  })
+app.get('/password_strength_sim.js', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.js'));
+  })
+  app.get('/good_bad_password.js', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.js'));
+  }) 
 
 // User registration endpoint
 app.post('/register', async (req, res) => {
@@ -67,22 +121,42 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     console.log("login")
     const {email, password} = req.body;
-    const user = users.find(u => u.email === email);
-    if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({email: user.email}, jwtSecret, {expiresIn: '12h'});
-        res.cookie('token', token, {httpOnly: true});
-        res.json({token});
-    } else {
-        res.status(401).send('Invalid credentials');
-    }
+
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Fehler beim Lesen der Benutzerdatei:', err);
+            return res.status(500).send('Serverfehler');
+        }
+        try {
+            // Lese Benutzer aus der JSON-Datei
+            const users = JSON.parse(data);
+
+            // Überprüfe die Anmeldeinformationen
+            const user = users.find(user => user.username === email && user.password === password);
+            if (user) {
+                // Setze den loggedIn-Zustand in der Session
+                req.session.email = email;
+                req.session.username = email;
+                req.session.loggedIn = true;
+                res.redirect('/good_bad_password')
+                console.log(`Erfolgreich angemeldet als ${email}`)
+                //res.status(200).send;
+            } else {
+                console.log('Ungültige Anmeldeinformationen')
+                res.status(401).send('Ungültige Anmeldeinformationen');
+            }
+        } catch (error) {
+            console.error('Fehler beim Parsen der Benutzerdaten:', error);
+            res.status(500).send('Serverfehler');
+        }
+        }
+    )
 });
 
 app.post('/logout', (req, res) => {
     console.log("Logout")
     res.clearCookie('token'); // Löschen Sie das Cookie
     res.status(200).send('User logged out');
-
-
 });
 
 // Password reset request endpoint
@@ -125,6 +199,10 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
+// Route für den Datenabruf (z.B. Punktestand und Benutzername)
+app.get('/userdata', (req, res) => {
+    res.json(userData); // Senden der Benutzerdaten als JSON
+});
 
 app.post('/passwords', (req, res) => {
     console.log("Generate Passwords")
@@ -135,8 +213,6 @@ app.post('/passwords', (req, res) => {
         usedPasswords.push(password);
     }
     res.status(200).send(usedPasswords);
-
-
 });
 
 app.post('/solve', (req, res) => {
@@ -155,9 +231,7 @@ app.post('/solve', (req, res) => {
         }
     }
     res.status(200).send(points.toString());
-
 });
-
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

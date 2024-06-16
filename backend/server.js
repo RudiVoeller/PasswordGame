@@ -9,11 +9,9 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const session = require('express-session')
+const session = require('express-session');
 const {createProxyMiddleware} = require('http-proxy-middleware'); //Just for development
-
-const usersFilePath = path.join(__dirname, '..','database', 'users.json'); // Pfad zur JSON-Datei mit Benutzerdaten
-                                                          // später ersetzen durch Datenbankabfrage
+const users = require('./user');
 
 const corsOptions = {
     origin: '*',
@@ -28,7 +26,7 @@ app.use(cors());
 // Sitzungseinrichtung
 app.use(session({
     secret: 'geheimeSitzungsSchluessel', // ändere dies in einen geheimen Schlüssel
-    resave: false,
+    resave: true,
     saveUninitialized: true,
     cookie: { secure: false } // auf true setzen, wenn https verwendet wird
 }));
@@ -55,9 +53,9 @@ function requireLogin(req, res, next) {
     if (req.session.loggedIn) {
         next();
     } else {
-        console.log('weiterleitung abgebrochen, nutzer ist nicht angemeldet.')
-        //res.redirect('/'); // Zur Login-Seite umleiten, wenn nicht angemeldet
-        next();
+        //console.log('weiterleitung abgebrochen, nutzer ist nicht angemeldet.')
+        res.redirect('/'); // Zur Login-Seite umleiten, wenn nicht angemeldet
+        //next();
     }
 }
 const jwtSecret = 'your_jwt_secret_key';
@@ -76,14 +74,12 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
   })
 
-// Aufruf der html Seiten
-app.get('/123', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
-  })
-
 // Geschützte Route -> Zugriff nur wenn Benutzer angemeldet
 app.get('/good_bad_password', requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
+});
+app.get('/password_strength_sim', requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.html'));
 });
 
 // Rückgabe der Stylesheets
@@ -121,42 +117,57 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     console.log("login")
     const {email, password} = req.body;
+    users.readUserData;
+    const user = users.userExists(email, password);
 
-    fs.readFile(usersFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Fehler beim Lesen der Benutzerdatei:', err);
-            return res.status(500).send('Serverfehler');
-        }
-        try {
-            // Lese Benutzer aus der JSON-Datei
-            const users = JSON.parse(data);
-
-            // Überprüfe die Anmeldeinformationen
-            const user = users.find(user => user.username === email && user.password === password);
-            if (user) {
-                // Setze den loggedIn-Zustand in der Session
-                req.session.email = email;
-                req.session.username = email;
-                req.session.loggedIn = true;
-                res.redirect('/good_bad_password')
-                console.log(`Erfolgreich angemeldet als ${email}`)
-                //res.status(200).send;
-            } else {
-                console.log('Ungültige Anmeldeinformationen')
-                res.status(401).send('Ungültige Anmeldeinformationen');
-            }
-        } catch (error) {
-            console.error('Fehler beim Parsen der Benutzerdaten:', error);
-            res.status(500).send('Serverfehler');
-        }
-        }
-    )
+    if (user) {
+        // Setze den loggedIn-Zustand in der Session
+        req.session.email = email;
+        req.session.user = email;
+        req.session.loggedIn = true;
+        res.redirect('/good_bad_password')
+        console.log(`Erfolgreich angemeldet als ${email}`)
+    } else {
+        console.log('Ungültige Anmeldeinformationen')
+        res.status(401).send('Ungültige Anmeldeinformationen');
+    }
 });
 
 app.post('/logout', (req, res) => {
     console.log("Logout")
-    res.clearCookie('token'); // Löschen Sie das Cookie
-    res.status(200).send('User logged out');
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Abmeldefehler');
+        }
+        res.redirect('/');
+    });
+});
+
+// Abrufen der Benutzerdaten
+app.get('/userdata', (req, res) => {
+    console.log('get userdata')
+    if (req.session.loggedIn) {
+        res.json({username: req.session.user, points: req.session.points});
+    } else {
+        res.status(401).json({ message: 'Nicht angemeldet' });
+    }
+});
+
+// Aktualisieren des Punktestands
+app.post('/updatepoints', (req, res) => {
+    if (req.session.user) {
+        const { points } = req.body;
+        const user = users.updateUserPoints(req.session.user, points);
+
+        if (user) {
+            req.session.points = points;
+            res.json({ message: 'Punktestand aktualisiert' });
+        } else {
+            res.status(404).json({ message: 'Benutzer nicht gefunden' });
+        }
+    } else {
+        res.status(401).json({ message: 'Nicht angemeldet' });
+    }
 });
 
 // Password reset request endpoint
@@ -197,11 +208,6 @@ app.post('/reset-password', async (req, res) => {
     } catch (error) {
         res.status(400).send('Invalid or expired token');
     }
-});
-
-// Route für den Datenabruf (z.B. Punktestand und Benutzername)
-app.get('/userdata', (req, res) => {
-    res.json(userData); // Senden der Benutzerdaten als JSON
 });
 
 app.post('/passwords', (req, res) => {

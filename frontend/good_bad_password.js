@@ -1,6 +1,9 @@
 // Passwörter beim Laden der Seite laden
 createPasswords()
 
+// Benutzerdaten laden
+loadUserData();
+
 async function createPasswords() {
 
     const response = await fetch('http://localhost:3000/passwords', {
@@ -55,27 +58,25 @@ function onRestart() {
     createPasswords();
 }
 
+function onNextGame() {
+    window.location.href = '/password_strength_sim';
+}
+
 function allowDrop(ev) {
     ev.preventDefault();
 }
 
 async function onSolve() {
-
-
     var childrenBad = document.getElementById("bad-dropzone").children;
     var passwordsBad = [];
     var passwordsGood = [];
     for (var i = 0; i < childrenBad.length; i++) {
         passwordsBad.push(childrenBad[i].textContent);
     }
-
-
     var childrenGood = document.getElementById("good-dropzone").children;
     for (var i = 0; i < childrenGood.length; i++) {
         passwordsGood.push(childrenGood[i].textContent);
     }
-
-
     const response = await fetch('http://localhost:3000/solve', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -90,8 +91,24 @@ async function onSolve() {
         console.error('Solving passwords failed');
     }
 
-    document.getElementById("points").innerHTML = points + " von 10 Punkten";
+    document.getElementById("score").innerHTML = points + " von 10 Punkten";
+}
 
+function loadUserData() {
+    fetch('/userdata')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Fehler beim Laden der Benutzerdaten');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('username').textContent = data.username;
+            document.getElementById('points').textContent = data.points;
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Benutzerdaten:', error);
+        });
 }
 
 window.onload = () => {
@@ -101,4 +118,4 @@ window.onload = () => {
             console.log('Redirecting to login page...');
         }
     });
-};s
+};

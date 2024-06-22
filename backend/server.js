@@ -263,7 +263,17 @@ app.post('/solve', (req, res) => {
     }
     // Punkte in aktueller Session speichern und an Client senden
     req.session.user.points = points;
-    res.status(200).send(points.toString());
+    res.json({points: points});
+});
+
+// Punkte an Client zurückgeben
+app.post('/getScore', (req, res) => {
+    console.log('get Score')
+    if (req.session.loggedIn){
+        res.json({points: req.session.user.points});
+    } else {
+        res.json({points: 0});
+    }
 });
 
 app.listen(port, () => {

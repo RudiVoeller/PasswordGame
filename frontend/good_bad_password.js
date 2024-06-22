@@ -52,7 +52,7 @@ function onRestart() {
     while (eleBad.hasChildNodes()) {
         eleBad.removeChild(eleBad.firstChild);
     }
-    document.getElementById("points").innerHTML = "";
+    document.getElementById('score').textContent = '';
 
     createPasswords();
 }
@@ -76,21 +76,21 @@ async function onSolve() {
     for (var i = 0; i < childrenGood.length; i++) {
         passwordsGood.push(childrenGood[i].textContent);
     }
-    const response = await fetch('http://localhost:3000/solve', {
+
+    const response = await fetch('/solve', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ passwordsBad, passwordsGood})
     });
-    console.log(response.body);
-    let points = 0;
-    if (response.ok) {
-        points = await response.json();
-    }
-    else {
-        console.error('Solving passwords failed');
-    }
 
-    document.getElementById("score").innerHTML = points + " von 10 Punkten";
+    if (!response.ok) {
+        throw new Error(`Fehler beim Senden der Daten: ${response.statusText}`);
+      }
+
+    const result = await response.json();
+    document.getElementById('score').textContent = result.points + " von 10 Punkten";
+
+    document.getElementById('userinfo').textContent = "Automatisch generierter Text zur Verbesserung der Leistung des Spielers.";
 }
 
 function loadUserData() {

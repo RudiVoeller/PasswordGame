@@ -1,8 +1,7 @@
-// Passwörter beim Laden der Seite laden
-createPasswords()
 
-// Benutzerdaten laden
+// Passwörter beim Laden der Seite laden
 loadUserData();
+createPasswords()
 
 async function createPasswords() {
 
@@ -111,8 +110,21 @@ function loadUserData() {
 }
 
 function onLogout() {
-    fetch('/logout');
-    window.location.href = '/';
+    fetch('/logout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Fehler beim Abmelden');
+        }
+        // Weiterleitung zur nächsten Seite
+        window.location.href = '/';
+    })
+    .catch(error => {
+        console.error('Abmeldefehler:', error);
+        // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
+    });
 }
 
 window.onload = () => {

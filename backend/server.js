@@ -105,9 +105,11 @@ app.get('/register', (req, res) => {
 
 // Geschützte Route -> Zugriff nur wenn Benutzer angemeldet, ansonsten umleitung auf ../login
 app.get('/good_bad_password', requireLogin, (req, res) => {
+    console.log('load game good_bad_password')
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
 });
 app.get('/password_strength_sim', requireLogin, (req, res) => {
+    console.log('load game password_strength_sim')
     res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.html'));
 });
 
@@ -241,7 +243,10 @@ app.post('/passwords', (req, res) => {
         usedPasswords.push(password);
     }
     // Punkte zurücksetzen
-    req.session.user.points = 0;
+    if (req.session.user !== undefined){
+        req.session.user.points = 0;
+        console.log("Points: " + req.session.user.points)
+    }
     res.status(200).send(usedPasswords);
 });
 
@@ -276,7 +281,7 @@ app.post('/getScore', (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0',() => {
     console.log(`Server running at http://localhost:${port}`);
 });
 

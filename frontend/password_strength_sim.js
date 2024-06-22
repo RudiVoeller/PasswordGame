@@ -109,8 +109,21 @@ function loadUserData() {
 
 // Logout
 function onLogout() {
-    fetch('/logout');
-    window.location.href = '/';
+    fetch('/logout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Fehler beim Abmelden');
+        }
+        // Weiterleitung zur nächsten Seite
+        window.location.href = '/';
+    })
+    .catch(error => {
+        console.error('Abmeldefehler:', error);
+        // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
+    });
 }
 
 generatePassword();     // Initiale Anzeige aktualisieren

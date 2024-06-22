@@ -1,13 +1,13 @@
 function onOpenRegister() {
-    window.location.href = "register.html";
+    window.location.href = '/register';
 }
 
 function onOpenLogin() {
-    window.location.href = "login.html";
+    window.location.href = '/';
 }
 
 function onOpenForgotPassword() {
-    window.location.href = "forgot-password.html";
+    window.location.href = '/';
 }
 
 function onLogin() {
@@ -35,13 +35,6 @@ function onLogin() {
 }
 
 async function onLogout() {
-    const response = await fetch('http://localhost:3000/logout', {
-        method: 'POST',
-    });
-
-    if (response.ok) {
-        console.log('User logged out');
-    } else {
-        console.error('Logout failed');
-    }
+    fetch('/logout');
+    window.location.href = '/';
 }

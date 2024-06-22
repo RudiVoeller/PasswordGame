@@ -2,11 +2,11 @@
     {
         "username": "user1",
         "password": "password1",
-        "points": 100
+        "points": 10
     },
     {
         "username": "user2",
         "password": "password2",
-        "points": 200
+        "points": 20
     }
 ]

@@ -88,4 +88,30 @@ function formatTime(seconds) {
     return timeString.trim() || "weniger als eine Sekunde";
 }
 
-generatePassword(); // Initiale Anzeige aktualisieren
+// Funktionen für den Header
+// Laden der Benutzerdaten
+function loadUserData() {
+    fetch('/userdata')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Fehler beim Laden der Benutzerdaten');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('username').textContent = data.username;
+            document.getElementById('highscore').textContent = data.record;
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Benutzerdaten:', error);
+        });
+}
+
+// Logout
+function onLogout() {
+    fetch('/logout');
+    window.location.href = '/';
+}
+
+generatePassword();     // Initiale Anzeige aktualisieren
+loadUserData();         // Benutzerdaten laden

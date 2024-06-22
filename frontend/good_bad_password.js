@@ -25,7 +25,6 @@ async function createPasswords() {
         }
     } else {
         console.error('Fetching passwords failed');
-
     }
 }
 
@@ -104,11 +103,16 @@ function loadUserData() {
         })
         .then(data => {
             document.getElementById('username').textContent = data.username;
-            document.getElementById('points').textContent = data.points;
+            document.getElementById('highscore').textContent = data.record;
         })
         .catch(error => {
             console.error('Fehler beim Laden der Benutzerdaten:', error);
         });
+}
+
+function onLogout() {
+    fetch('/logout');
+    window.location.href = '/';
 }
 
 window.onload = () => {

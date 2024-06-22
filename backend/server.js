@@ -1,16 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const app = express({strict: false});
+const port = 3000;
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const app = express({strict: false});
-const port = 3000;
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const {createProxyMiddleware} = require('http-proxy-middleware'); //Just for development
+const mysql = require('mysql2');
+
 const users = require('./user');
 
 const corsOptions = {
@@ -31,6 +34,28 @@ app.use(session({
     cookie: { secure: false } // auf true setzen, wenn https verwendet wird
 }));
 
+// MySQL Verbindungsdetails
+// -> Vorher muss MySQL auf dem Server installiert werden und die Datenbank sowie die Tabellen mittels Skript hinzugefügt werden
+const dbConfig = {
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'root',
+    database: 'passwordgame'
+};
+
+// MySQL Verbindung erstellen
+const connection = mysql.createConnection(dbConfig);
+
+// Verbindung herstellen
+connection.connect(err => {
+    if (err) {
+        console.error('Fehler bei der Verbindung zur SQL-Datenbank:', err);
+        return;
+    }
+    console.log('Verbindung zur Datenbank erfolgreich');
+});
+
 // Statische Dateien aus dem 'public'-Verzeichnis bereitstellen
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -49,6 +74,7 @@ let goodPasswords = passwords.goodPasswords;
 let badPasswords = passwords.badPasswords;
 
 // Middleware zur Überprüfung der Session für geschützte Routen
+// Verhindert das Seiten angesteuert werden könne wenn der Benutzer nicht angemeldet ist.
 function requireLogin(req, res, next) {
     if (req.session.loggedIn) {
         next();
@@ -72,9 +98,12 @@ const transporter = nodemailer.createTransport({
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
-  })
+});
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'register.html'));
+});
 
-// Geschützte Route -> Zugriff nur wenn Benutzer angemeldet
+// Geschützte Route -> Zugriff nur wenn Benutzer angemeldet, ansonsten umleitung auf ../login
 app.get('/good_bad_password', requireLogin, (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
 });
@@ -100,7 +129,7 @@ app.get('/register-login.js', (req, res) => {
 app.get('/password_strength_sim.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.js'));
   })
-  app.get('/good_bad_password.js', (req, res) => {
+app.get('/good_bad_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.js'));
   }) 
 
@@ -115,22 +144,31 @@ app.post('/register', async (req, res) => {
 
 // User login endpoint
 app.post('/login', async (req, res) => {
-    console.log("login")
-    const {email, password} = req.body;
-    users.readUserData;
-    const user = users.userExists(email, password);
+    console.log('login');
+    const { email, password } = req.body;
+    const query = 'SELECT * FROM users WHERE email = ? AND password = ?';
+    
+    connection.query(query, [email, password], (err, results) => {
+        if (err) {
+            console.error('Fehler beim Abrufen der Benutzerdaten:', err);
+            res.status(500).send('Fehler beim Abrufen der Benutzerdaten');
+            return;
+        }
 
-    if (user) {
-        // Setze den loggedIn-Zustand in der Session
-        req.session.email = email;
-        req.session.user = email;
-        req.session.loggedIn = true;
-        res.redirect('/good_bad_password')
-        console.log(`Erfolgreich angemeldet als ${email}`)
-    } else {
-        console.log('Ungültige Anmeldeinformationen')
-        res.status(401).send('Ungültige Anmeldeinformationen');
-    }
+        if (results.length > 0) {
+            // Benutzer gefunden
+            // Benutzerdaten in session speichern
+            req.session.user = results[0]
+            req.session.loggedIn = true;
+            // Weiterleitung zum ersten Spiel
+            res.redirect('/good_bad_password')
+            console.log(`Erfolgreich angemeldet als ${email}`)
+        } else {
+            // Benutzer nicht gefunden
+            console.log('Ungültige Anmeldeinformationen')
+            res.status(401).send('Ungültige Anmeldeinformationen');
+        }
+    });
 });
 
 app.post('/logout', (req, res) => {
@@ -143,28 +181,11 @@ app.post('/logout', (req, res) => {
     });
 });
 
-// Abrufen der Benutzerdaten
+// Gibt Benutzerdaten (Name aktuellen Punktestand und Rekord an Client zurück)
 app.get('/userdata', (req, res) => {
     console.log('get userdata')
     if (req.session.loggedIn) {
-        res.json({username: req.session.user, points: req.session.points});
-    } else {
-        res.status(401).json({ message: 'Nicht angemeldet' });
-    }
-});
-
-// Aktualisieren des Punktestands
-app.post('/updatepoints', (req, res) => {
-    if (req.session.user) {
-        const { points } = req.body;
-        const user = users.updateUserPoints(req.session.user, points);
-
-        if (user) {
-            req.session.points = points;
-            res.json({ message: 'Punktestand aktualisiert' });
-        } else {
-            res.status(404).json({ message: 'Benutzer nicht gefunden' });
-        }
+        res.json({username: req.session.user.username, points: req.session.user.points,  record: req.session.user.record});
     } else {
         res.status(401).json({ message: 'Nicht angemeldet' });
     }
@@ -210,6 +231,7 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
+// Passwort Sortierer
 app.post('/passwords', (req, res) => {
     console.log("Generate Passwords")
     let usedPasswords = [];
@@ -218,9 +240,12 @@ app.post('/passwords', (req, res) => {
         var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
         usedPasswords.push(password);
     }
+    // Punkte zurücksetzen
+    req.session.user.points = 0;
     res.status(200).send(usedPasswords);
 });
 
+// Passwort Sortierer Punkte berechnen
 app.post('/solve', (req, res) => {
     console.log("Solve Passwords")
     var badPasswordsInput = req.body.passwordsBad;
@@ -236,6 +261,8 @@ app.post('/solve', (req, res) => {
             points++;
         }
     }
+    // Punkte in aktueller Session speichern und an Client senden
+    req.session.user.points = points;
     res.status(200).send(points.toString());
 });
 

@@ -56,10 +56,6 @@ function onRestart() {
     createPasswords();
 }
 
-function onNextGame() {
-    window.location.href = '/password_strength_sim';
-}
-
 function allowDrop(ev) {
     ev.preventDefault();
 }
@@ -90,6 +86,10 @@ async function onSolve() {
     document.getElementById('score').textContent = result.points + " von 10 Punkten";
 
     document.getElementById('userinfo').textContent = "Automatisch generierter Text zur Verbesserung der Leistung des Spielers.";
+}
+
+function onNextGame() {
+    window.location.href = '/password_strength_sim';
 }
 
 function loadUserData() {
@@ -126,12 +126,3 @@ function onLogout() {
         // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
     });
 }
-
-window.onload = () => {
-    checkToken().then(isValid => {
-        if (!isValid) {
-            // Weiterleitung zur Login-Seite oder Anzeige einer Meldung
-            console.log('Redirecting to login page...');
-        }
-    });
-};

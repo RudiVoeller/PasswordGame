@@ -112,28 +112,35 @@ app.get('/password_strength_sim', requireLogin, (req, res) => {
     console.log('load game password_strength_sim')
     res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.html'));
 });
+app.get('/guess_the_password', requireLogin, (req, res) => {
+    console.log('load game guess_the_password')
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'guess_the_password.html'));
+});
 
 // Rückgabe der Stylesheets
 app.get('/login.css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.css'));
   })
-app.get('/password_strength_sim.css', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.css'));
-  })
-  app.get('/good_bad_password.css', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.css'));
+app.get('/style.css', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'style.css'));
   })
 
  // Rückgabe der client-js Dateien
+ app.get('/script.js', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'script.js'));
+})
 app.get('/register-login.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'register-login.js'));
-  })
+})
 app.get('/password_strength_sim.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.js'));
-  })
+})
 app.get('/good_bad_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.js'));
-  }) 
+}) 
+app.get('/guess_the_password.js', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'guess_the_password.js'));
+}) 
 
 // User registration endpoint
 app.post('/register', async (req, res) => {
@@ -300,4 +307,98 @@ function getRandomPassword(goodPasswords, badPasswords, usedPasswords) {
     }
     return password
 }
+
+// Passwörter an Client zurückgeben
+app.post('/getPSSPasswords', (req, res) => {
+    console.log('get PSSPasswords')
+    if (req.session.loggedIn){
+        const passwords = generateStrengthPasswords(1);
+        res.send(passwords);
+    } else {
+        res.end;
+    }
+});
+
+// Funktion zum erstellen der Passwörter für den PSS
+function generateStrengthPasswords(level){
+    const passwords = [];
+    let digits = "0123456789";
+    let lower = "abcdefghijklmnopqrstuvwxyz";
+    let upper = lower.toUpperCase();
+    let symbol = "%+-/!,$_";
+    let currentCharset = "";
+
+    // Erstellt unterschiedliche passwörter aufgrund des aktuellen levels
+    if (level == 1) {
+        currentCharset = "";
+        currentCharset += digits;
+        passwords.push(generateGenericPassword(currentCharset, 6));
+        currentCharset += lower;
+        passwords.push(generateGenericPassword(currentCharset, 6));
+        passwords.push(generateGenericPassword(currentCharset, 8));
+        currentCharset += upper;
+        passwords.push(generateGenericPassword(currentCharset, 8));
+        passwords.push(generateGenericPassword(currentCharset, 10));
+    }
+    return passwords;
+}
+function generateGenericPassword(charset, length){
+    let password = ''
+    for (let i = 0; i < length; i++){
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        password += charset[randomIndex];
+    }
+    return password;
+}
+// Ermittelt die Zeit in Sekunden die erforderlich ist um ein Passwort mittels Brute-Force zu knacken
+function getPasswordCrackTime (password) {
+    let digits = "0123456789";
+    let lower = "abcdefghijklmnopqrstuvwxyz";
+    let upper = lower.toUpperCase();
+    let symbol = "%+-/!,$_";
+    let currentCharset = "";
+    // charset des passworts ermitteln
+    for (let i = 0; i < password.length; i++){
+        if (digits.includes(password[i])) {
+            currentCharset += digits;
+            digits = "";
+        } else if (lower.includes(password[i])) {
+            currentCharset += lower;
+            lower = "";
+        } else if (upper.includes(password[i])) {
+            currentCharset += upper;
+            upper = "";
+        } else if (upper.includes(password[i])) {
+            currentCharset += upper;
+            upper = "";
+        } else if (symbol.includes(password[i])) {
+            currentCharset += symbol;
+            symbol = "";
+        }
+    }
+    const charSetSize = new Set(currentCharset).size;
+    const attemptsPerSecond = 1e9; // 1 Milliarde Versuche pro Sekunde
+    const combinations = Math.pow(charSetSize, password.length);
+    const seconds = combinations / attemptsPerSecond;
+    return Math.floor(seconds);
+}
+
+// Passwort-Stärke-Simulator Punkte berechnen
+app.post('/solvePSS', (req, res) => {
+    console.log("Solve PSS")
+    let passwords = req.body.passwords;
+    let solveTime = req.body.solvetime;
+    let points = 0;
+
+    for (let i = 0; i < passwords.length; i++) {
+        // prüft ob die Zei +- 10% genau berechnet wurde
+        if (getPasswordCrackTime(passwords[i]) >=  (solveTime[i]*0.9) && getPasswordCrackTime(passwords[i]) <=  (solveTime[i]*1.1)) {
+            points += 2;
+        }
+    }
+
+    // Punkte in aktueller Session speichern und an Client senden
+    req.session.user.points += points;
+    res.json({points: points});
+});
 

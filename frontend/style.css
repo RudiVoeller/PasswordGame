@@ -50,6 +50,9 @@ div.db {
     margin: 5px;
     color: red;
 }
+
+/* Style für Passwort Sortierer Controls */
+
 .category {
     width: 45%;
     border: 2px solid #333;
@@ -58,7 +61,6 @@ div.db {
     margin: 20px;
     min-height: 200px;
 }
-
 .droppable {
     display: flex;
     flex-wrap: wrap;
@@ -78,6 +80,66 @@ div.db {
     margin: 5px;
     cursor: move;
 }
+
+/* Style für Passwort Strength Simulatot Controls */
+.boxframe {
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    margin: 5%;
+    padding-top: 10px;
+    /*
+    margin-top: 5;
+    margin-left: 5%;
+    margin-right: 5%;
+    */
+}
+.controls {
+    margin-bottom: 20px;
+}
+.controls label {
+    display: inline-block;
+    width: 30%;
+    text-align: left;
+}
+.controls input[type=number] {
+    background-color: #94d3a2;
+    -moz-appearance: textfield; /* Up-Down-Pfeile in Firefox ausblenden*/
+}
+/* Up-Down-Pfeile in Chrome, Safari, Edge, Opera ausblenden*/
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.controls input[type=range] {
+    width: 30%;
+}
+.controls input[type=range].toggle {
+    width: 10%;
+}
+.password-display {
+    font-size: 1.2em;
+    margin: 20px 0;
+}
+.strength-meter {
+    width: 80%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 5px;
+    margin: 20px auto;
+}
+#strength-bar {
+    height: 100%;
+    width: 0;
+    border-radius: 5px;
+}
+#strength-description {
+    font-size: 1.2em;
+    margin-top: 10px;
+}
+
+/* Controls unten (Auflösen, Neu starten, ...) */
+
 .button.m {
     font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
     color: #fff;

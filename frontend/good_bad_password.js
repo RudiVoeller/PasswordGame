@@ -1,27 +1,26 @@
 
 // Passwörter beim Laden der Seite laden
 loadUserData();
-createPasswords()
-
-async function createPasswords() {
-
+createPassword()
+var points = 0;
+async function createPassword() {
     const response = await fetch('http://localhost:3000/passwords', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({token: localStorage.getItem('token')})
     });
-
     if (response.ok) {
-        let passwords = await response.json();
-        for (var i = 0; i < passwords.length; i++) {
+
+        let password = await response.text();
+        console.log(password);
             var pw = document.createElement('label');
-            pw.textContent = passwords.at(i);
+            pw.textContent = password.toString();
             pw.addEventListener('dragstart', drag);
             pw.draggable = true;
             pw.className = "draggable"
-            pw.id = "pw_" + i;
+            pw.id = "pw";
             document.getElementById('passwords').appendChild(pw);
-        }
+
     } else {
         console.error('Fetching passwords failed');
     }
@@ -34,7 +33,10 @@ function drag(ev) {
 function drop(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");
-    ev.target.appendChild(document.getElementById(data));
+    console.log(document.getElementById(data).textContent);
+    solve(document.getElementById(data).textContent, ev.target.id === "good-dropzone");
+    document.getElementById(data).remove();
+    createPassword()
 }
 
 function onRestart() {
@@ -53,29 +55,20 @@ function onRestart() {
     }
     document.getElementById('score').textContent = '';
 
-    createPasswords();
+    createPassword();
 }
 
 function allowDrop(ev) {
     ev.preventDefault();
 }
 
-async function onSolve() {
-    var childrenBad = document.getElementById("bad-dropzone").children;
-    var passwordsBad = [];
-    var passwordsGood = [];
-    for (var i = 0; i < childrenBad.length; i++) {
-        passwordsBad.push(childrenBad[i].textContent);
-    }
-    var childrenGood = document.getElementById("good-dropzone").children;
-    for (var i = 0; i < childrenGood.length; i++) {
-        passwordsGood.push(childrenGood[i].textContent);
-    }
+async function solve(password, isGood) {
 
-    const response = await fetch('/solve', {
+
+    const response = await fetch('http://localhost:3000/solve', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ passwordsBad, passwordsGood})
+        body: JSON.stringify({ password:password, isGood:isGood})
     });
 
     if (!response.ok) {
@@ -83,9 +76,20 @@ async function onSolve() {
       }
 
     const result = await response.json();
-    document.getElementById('score').textContent = result.points + " von 10 Punkten";
 
-    document.getElementById('userinfo').textContent = "Automatisch generierter Text zur Verbesserung der Leistung des Spielers.";
+    if (result.correct) {
+        points++;
+        document.getElementById('userinfo').visible = false;
+    }
+    else {
+        points = 0;
+        document.getElementById('userinfo').visible = true;
+    document.getElementById('userinfo').textContent = "Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
+    }
+
+
+
+    document.getElementById('current_score').textContent = points;
 }
 
 function onNextGame() {

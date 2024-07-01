@@ -97,7 +97,7 @@ const transporter = nodemailer.createTransport({
 
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'register.html'));
@@ -242,40 +242,43 @@ app.post('/reset-password', async (req, res) => {
 
 // Passwort Sortierer
 app.post('/passwords', (req, res) => {
-    console.log("Generate Passwords")
     let usedPasswords = [];
 
-    for (let i = 0; i < 10; i++) {
         var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
-        usedPasswords.push(password);
-    }
+
     // Punkte zurücksetzen
     if (req.session.user !== undefined){
         req.session.user.points = 0;
         console.log("Points: " + req.session.user.points)
     }
-    res.status(200).send(usedPasswords);
+    res.status(200).send(password);
 });
 
 // Passwort Sortierer Punkte berechnen
 app.post('/solve', (req, res) => {
     console.log("Solve Passwords")
-    var badPasswordsInput = req.body.passwordsBad;
-    var goodPasswordsInput = req.body.passwordsGood;
-    var points = 0;
-    for (var i = 0; i < badPasswordsInput.length; i++) {
-        if (badPasswords.includes(badPasswordsInput[i])) {
-            points++;
+    var password = req.body.password;
+    var isGood = req.body.isGood;
+    var isCorrect = false;
+
+    if (isGood) {
+        if (goodPasswords.includes(password)) {
+            isCorrect=true;
         }
     }
-    for (var i = 0; i < goodPasswordsInput.length; i++) {
-        if (goodPasswords.includes(goodPasswordsInput[i])) {
-            points++;
+    else
+    {
+        if (badPasswords.includes(password)) {
+            isCorrect=true;
         }
     }
+    console.log(isCorrect)
     // Punkte in aktueller Session speichern und an Client senden
-    req.session.user.points = points;
-    res.json({points: points});
+   // if (isCorrect) {
+    //    req.session.user.points += 1;
+   // }
+    //req.session.user.points = points;
+    res.json({correct: isCorrect});
 });
 
 // Punkte an Client zurückgeben

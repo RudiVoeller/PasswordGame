@@ -136,9 +136,9 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Style für Guess the Password */
 
 img {
-    width: 80%;
+    width: 60%;
     border-radius: 10px;
-    border: 2px solid #ccc;
+    /*border: 2px solid #ccc;*/
     box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.6);
 }
 

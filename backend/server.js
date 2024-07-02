@@ -142,6 +142,10 @@ app.get('/good_bad_password.js', (req, res) => {
 }) 
 app.get('/guess_the_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'guess_the_password.js'));
+})
+
+app.get('/pw_game_2.jpeg', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'pw_game_2.jpeg'));
 }) 
 
 // User registration endpoint

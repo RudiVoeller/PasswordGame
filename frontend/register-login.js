@@ -3,11 +3,36 @@ function onOpenRegister() {
 }
 
 function onOpenLogin() {
-    window.location.href = '/';
+    window.location.href = '/login';
 }
 
-function onOpenForgotPassword() {
-    window.location.href = '/';
+function onRegister() {
+    const email = document.getElementById("user-input").value;
+    const password = document.getElementById("pass-input").value;
+    const passwordRepeat = document.getElementById("pass-confirm-input").value;
+
+    if (password !== passwordRepeat) {
+        return alert('Passwörter stimmen nicht überein');
+    }
+
+    fetch('/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Fehler beim Anmelden');
+            }
+            // Weiterleitung zur nächsten Seite
+            window.location.href = '/login';
+        })
+        .catch(error => {
+            console.error('Anmeldefehler:', error);
+            // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
+        });
 }
 
 function onLogin() {

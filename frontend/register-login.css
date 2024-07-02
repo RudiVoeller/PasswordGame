@@ -39,6 +39,10 @@ body {
     color: #fff;
 }
 
+.input-form{
+    margin: 5px;
+}
+
 /* Responsive Design für kleinere Bildschirme */
 @media (max-width: 768px) {
     .sidenav, .main {

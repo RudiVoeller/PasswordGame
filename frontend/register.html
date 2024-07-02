@@ -5,7 +5,7 @@
 <div class="box">
     <div class="sidenav">
         <div class="login-main-text">
-            <h2>Password Game<br> Login Page</h2>
+            <h2>Password Game<br> Register Page</h2>
         </div>
     </div>
     <div class="main">
@@ -15,10 +15,12 @@
                     <div class="form-group">
                         <label>Login</label><br>
                         <input type="text" id="user-input" class="form-control" placeholder="Username"><br>
-                        <input type="password" id="pass-input" class="form-control" placeholder="Password">
+                        <input type="password" id="pass-input" class="form-control" placeholder="Password"><br>
+                        <input type="password" id="pass-confirm-input" class="form-control" placeholder="Confirm Password"><br>
+
                     </div>
-                    <button type="button" class="btn btn-black" onclick="onLogin()">Login</button><br>
-                    <button type="button" class="btn btn-secondary" onclick="onOpenRegister()">Register</button>
+                    <button type="button" class="btn btn-black" onclick="onRegister()">Register</button><br>
+                    <button type="button" class="btn btn-secondary" onclick="onOpenLogin()">Login</button>
                 </form>
             </div>
         </div>

@@ -78,7 +78,9 @@ let badPasswords = passwords.badPasswords;
 function requireLogin(req, res, next) {
     if (req.session.loggedIn) {
         next();
-    } else {
+    }
+    else
+    {
         //console.log('weiterleitung abgebrochen, nutzer ist nicht angemeldet.')
         res.redirect('/'); // Zur Login-Seite umleiten, wenn nicht angemeldet
         //next();
@@ -96,8 +98,8 @@ const transporter = nodemailer.createTransport({
 });
 
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
 });
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'register.html'));
@@ -118,8 +120,8 @@ app.get('/guess_the_password', requireLogin, (req, res) => {
 });
 
 // Rückgabe der Stylesheets
-app.get('/login.css', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.css'));
+app.get('/register-login.css', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'register-login.css'));
   })
 app.get('/style.css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'style.css'));
@@ -145,19 +147,21 @@ app.get('/guess_the_password.js', (req, res) => {
 // User registration endpoint
 app.post('/register', async (req, res) => {
     console.log("register")
-    const {username, email, password} = req.body;
+    const {username, password} = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    users.push({username, email, password: hashedPassword});
+
+
+    users.push({username, password: hashedPassword});
     res.status(201).send('User registered');
 });
 
 // User login endpoint
 app.post('/login', async (req, res) => {
     console.log('login');
-    const { email, password } = req.body;
+    const { user: user, password } = req.body;
     const query = 'SELECT * FROM users WHERE email = ? AND password = ?';
     
-    connection.query(query, [email, password], (err, results) => {
+    connection.query(query, [user, password], (err, results) => {
         if (err) {
             console.error('Fehler beim Abrufen der Benutzerdaten:', err);
             res.status(500).send('Fehler beim Abrufen der Benutzerdaten');
@@ -171,7 +175,7 @@ app.post('/login', async (req, res) => {
             req.session.loggedIn = true;
             // Weiterleitung zum ersten Spiel
             res.redirect('/good_bad_password')
-            console.log(`Erfolgreich angemeldet als ${email}`)
+            console.log(`Erfolgreich angemeldet als ${user}`)
         } else {
             // Benutzer nicht gefunden
             console.log('Ungültige Anmeldeinformationen')

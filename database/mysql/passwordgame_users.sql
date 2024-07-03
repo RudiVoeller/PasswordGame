@@ -8,15 +8,14 @@ USE passwordgame;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    points INT DEFAULT 0,
-    record INT DEFAULT 0
+    high_score_one INT DEFAULT 0,
+    high_score_two INT DEFAULT 0
 );
 
 -- Standardwerte in die Tabelle 'users' einfügen
-INSERT INTO users (username, email, password, points, record) VALUES
-('john_doe', 'john@example.com', 'password123', 10, 50),
-('jane_doe', 'jane@example.com', 'password456', 20, 70),
-('alice', 'alice@example.com', 'password789', 15, 60),
-('bob', 'bob@example.com', 'password101', 25, 80);
+INSERT INTO users (username, password, high_score_one, high_score_two) VALUES
+('john_doe', 'password123', 10, 50),
+('jane_doe', 'password456', 20, 70),
+('alice',  'password789', 15, 60),
+('bob',  'password101', 25, 80);

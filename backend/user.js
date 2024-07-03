@@ -1,49 +1,73 @@
-const fs = require('fs');
-const path = require('path');
+// Importieren des MySQL-Moduls
+const mysql = require('mysql');
 
-// Pfad zur JSON-Datei
-const dataPath = path.join(__dirname, '..','database', 'users.json');   // Pfad zur JSON-Datei mit Benutzerdaten
-                                                                        // später ersetzen durch Datenbankabfrage
+// Erstellen einer Verbindung zur Datenbank
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'meinBenutzername',
+    password: 'meinPasswort',
+    database: 'passwordgame'
+});
 
-// Funktion zum Lesen der JSON-Datei
-function readUserData() {
-    const data = fs.readFileSync(dataPath);
-    return JSON.parse(data);
+db.connect((err) => {
+    if (err) throw err;
+    console.log('Verbindung zur Datenbank erfolgreich hergestellt');
+});
+
+// Funktion, um einen Benutzer anhand der ID zu holen
+function getUserById(id) {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT * FROM users WHERE id = ?';
+        db.query(query, [id], (err, result) => {
+            if (err) reject(err);
+            resolve(result[0]);
+        });
+    });
 }
 
-// Funktion zum Schreiben in die JSON-Datei
-function writeUserData(data) {
-    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-}
-
-// Funktion zum Prüfen ob Benutzer existiert
-function userExists(username, password) {
-    //const users = readUserData();
-    const user = readUserData().find(user => user.username === username && user.password === password);
-    return user;
-}
-
-// Funktion zum Abrufen eines Benutzers
-function getUser(username) {
-    const usersData = readUserData();
-    return usersData.users.find(user => user.username === username);
-}
-
-// Funktion zum Aktualisieren des Punktestands eines Benutzers
-function updateUserPoints(username, points) {
-    const usersData = readUserData();
-    const user = usersData.users.find(user => user.username === username);
-    if (user) {
-        user.points = points;
-        writeUserData(usersData);
+async function createUser(userData) {
+    const usernameExists = await checkUsernameExists(userData.username);
+    if (usernameExists) {
+        throw new Error('Benutzername bereits vergeben');
     }
-    return user;
+    return new Promise((resolve, reject) => {
+        const query = 'INSERT INTO users SET ?';
+        db.query(query, userData, (err, result) => {
+            if (err) reject(err);
+            resolve(result.insertId);
+        });
+    });
 }
 
-module.exports = {
-    readUserData,
-    writeUserData,
-    userExists,
-    getUser,
-    updateUserPoints
-};
+function getHighScoresById(id) {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT high_score_one, high_score_two FROM users WHERE id = ?';
+        db.query(query, [id], (err, result) => {
+            if (err) reject(err);
+            resolve(result[0]);
+        });
+    });
+}
+
+function updateHighScore(id, scoreName, newScore) {
+    return new Promise((resolve, reject) => {
+        const query = `UPDATE users SET ${mysql.escapeId(scoreName)} = ? WHERE id = ?`;
+        db.query(query, [newScore, id], (err, result) => {
+            if (err) reject(err);
+            resolve(result.affectedRows);
+        });
+    });
+}
+
+function checkUsernameExists(username) {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT id FROM users WHERE username = ?';
+        db.query(query, [username], (err, result) => {
+            if (err) reject(err);
+            resolve(result.length > 0);
+        });
+    });
+}
+
+// Exportieren der Funktionen
+module.exports = { getUserById, createUser, getHighScoresById, updateHighScore, checkUsernameExists };

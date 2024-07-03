@@ -5,22 +5,14 @@ const port = 3000;
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const {createProxyMiddleware} = require('http-proxy-middleware'); //Just for development
 const mysql = require('mysql2');
 
 const users = require('./user');
-
-const corsOptions = {
-    origin: '*',
-    credentials: true,            //access-control-allow-credentials:true
-    optionSuccessStatus: 200,
-}
 
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -31,7 +23,10 @@ app.use(session({
     secret: 'geheimeSitzungsSchluessel', // ändere dies in einen geheimen Schlüssel
     resave: true,
     saveUninitialized: true,
-    cookie: { secure: false } // auf true setzen, wenn https verwendet wird
+    cookie: {
+        secure: false,
+        maxAge: 30 * 60 * 1000 // 1 Minute
+    } // auf true setzen, wenn https verwendet wird
 }));
 
 // MySQL Verbindungsdetails
@@ -82,20 +77,10 @@ function requireLogin(req, res, next) {
     else
     {
         //console.log('weiterleitung abgebrochen, nutzer ist nicht angemeldet.')
-        res.redirect('/'); // Zur Login-Seite umleiten, wenn nicht angemeldet
+        res.redirect('/login'); // Zur Login-Seite umleiten, wenn nicht angemeldet
         //next();
     }
 }
-const jwtSecret = 'your_jwt_secret_key';
-
-// Nodemailer setup
-const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: 'your_email@gmail.com',
-        pass: 'your_email_password'
-    }
-});
 
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
 app.get('/login', (req, res) => {
@@ -152,11 +137,28 @@ app.get('/pw_game_2.jpeg', (req, res) => {
 app.post('/register', async (req, res) => {
     console.log("register")
     const {username, password} = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-
-    users.push({username, password: hashedPassword});
-    res.status(201).send('User registered');
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        // Erstellen eines neuen Benutzerobjekts mit dem gehashten Passwort
+        const newUser = {
+            username: username,
+            password: hashedPassword, // Verwenden des gehashten Passworts
+            high_score_one: 0,
+            high_score_two: 0
+        };
+        // Aufrufen der createUser Funktion aus user.js
+        users.createUser(newUser)
+            .then(userId => {
+                res.status(201).json({ message: 'Benutzer erfolgreich erstellt', userId: userId });
+            })
+            .catch(err => {
+                console.error(err);
+                res.status(500).json({ message: 'Fehler beim Erstellen des Benutzers' });
+            });
+    } catch (err) {
+        console.error('Fehler beim Hashen des Passworts:', err);
+        res.status(500).send('Fehler beim Registrieren des Benutzers');
+    }
 });
 
 // User login endpoint
@@ -194,7 +196,7 @@ app.post('/logout', (req, res) => {
         if (err) {
             return res.status(500).send('Abmeldefehler');
         }
-        res.redirect('/');
+        res.redirect('/login');
     });
 });
 
@@ -205,46 +207,6 @@ app.get('/userdata', (req, res) => {
         res.json({username: req.session.user.username, points: req.session.user.points,  record: req.session.user.record});
     } else {
         res.status(401).json({ message: 'Nicht angemeldet' });
-    }
-});
-
-// Password reset request endpoint
-app.post('/forgot-password', (req, res) => {
-    const {email} = req.body;
-    const user = users.find(u => u.email === email);
-    if (user) {
-        const resetToken = jwt.sign({email: user.email}, jwtSecret, {expiresIn: '15m'});
-        const resetLink = `http://localhost:${port}/reset-password?token=${resetToken}`;
-
-        transporter.sendMail({
-            to: user.email,
-            subject: 'Password Reset',
-            text: `Click here to reset your password: ${resetLink}`
-        }, (error, info) => {
-            if (error) {
-                return res.status(500).send('Error sending email');
-            }
-            res.send('Password reset email sent');
-        });
-    } else {
-        res.status(404).send('User not found');
-    }
-});
-
-// Password reset endpoint
-app.post('/reset-password', async (req, res) => {
-    const {token, newPassword} = req.body;
-    try {
-        const decoded = jwt.verify(token, jwtSecret);
-        const user = users.find(u => u.email === decoded.email);
-        if (user) {
-            user.password = await bcrypt.hash(newPassword, 10);
-            res.send('Password reset successful');
-        } else {
-            res.status(404).send('User not found');
-        }
-    } catch (error) {
-        res.status(400).send('Invalid or expired token');
     }
 });
 

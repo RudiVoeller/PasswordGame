@@ -29,28 +29,6 @@ app.use(session({
     } // auf true setzen, wenn https verwendet wird
 }));
 
-// MySQL Verbindungsdetails
-// -> Vorher muss MySQL auf dem Server installiert werden und die Datenbank sowie die Tabellen mittels Skript hinzugefügt werden
-const dbConfig = {
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'root',
-    database: 'passwordgame'
-};
-
-// MySQL Verbindung erstellen
-const connection = mysql.createConnection(dbConfig);
-
-// Verbindung herstellen
-connection.connect(err => {
-    if (err) {
-        console.error('Fehler bei der Verbindung zur SQL-Datenbank:', err);
-        return;
-    }
-    console.log('Verbindung zur Datenbank erfolgreich');
-});
-
 // Statische Dateien aus dem 'public'-Verzeichnis bereitstellen
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
@@ -73,9 +51,7 @@ let badPasswords = passwords.badPasswords;
 function requireLogin(req, res, next) {
     if (req.session.loggedIn) {
         next();
-    }
-    else
-    {
+    } else {
         //console.log('weiterleitung abgebrochen, nutzer ist nicht angemeldet.')
         res.redirect('/login'); // Zur Login-Seite umleiten, wenn nicht angemeldet
         //next();
@@ -107,13 +83,13 @@ app.get('/guess_the_password', requireLogin, (req, res) => {
 // Rückgabe der Stylesheets
 app.get('/register-login.css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'register-login.css'));
-  })
+})
 app.get('/style.css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'style.css'));
-  })
+})
 
- // Rückgabe der client-js Dateien
- app.get('/script.js', (req, res) => {
+// Rückgabe der client-js Dateien
+app.get('/script.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'script.js'));
 })
 app.get('/register-login.js', (req, res) => {
@@ -124,14 +100,14 @@ app.get('/password_strength_sim.js', (req, res) => {
 })
 app.get('/good_bad_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.js'));
-}) 
+})
 app.get('/guess_the_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'guess_the_password.js'));
 })
 
 app.get('/pw_game_2.jpeg', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'pw_game_2.jpeg'));
-}) 
+})
 
 // User registration endpoint
 app.post('/register', async (req, res) => {
@@ -149,11 +125,11 @@ app.post('/register', async (req, res) => {
         // Aufrufen der createUser Funktion aus user.js
         users.createUser(newUser)
             .then(userId => {
-                res.status(201).json({ message: 'Benutzer erfolgreich erstellt', userId: userId });
+                res.status(201).json({message: 'Benutzer erfolgreich erstellt', userId: userId});
             })
             .catch(err => {
                 console.error(err);
-                res.status(500).json({ message: 'Fehler beim Erstellen des Benutzers' });
+                res.status(500).json({message: 'Fehler beim Erstellen des Benutzers'});
             });
     } catch (err) {
         console.error('Fehler beim Hashen des Passworts:', err);
@@ -164,30 +140,25 @@ app.post('/register', async (req, res) => {
 // User login endpoint
 app.post('/login', async (req, res) => {
     console.log('login');
-    const { user: user, password } = req.body;
-    const query = 'SELECT * FROM users WHERE email = ? AND password = ?';
-    
-    connection.query(query, [user, password], (err, results) => {
-        if (err) {
-            console.error('Fehler beim Abrufen der Benutzerdaten:', err);
-            res.status(500).send('Fehler beim Abrufen der Benutzerdaten');
-            return;
-        }
-
-        if (results.length > 0) {
-            // Benutzer gefunden
-            // Benutzerdaten in session speichern
-            req.session.user = results[0]
+    const {user: user, password} = req.body;
+    try {
+        const dbPassword = await users.getPasswordByUser(username);
+        const match = await bcrypt.compare(password, dbPassword);
+        if (match) {
+            // Passwörter stimmen überein
+            req.session.user = {username: username};
             req.session.loggedIn = true;
-            // Weiterleitung zum ersten Spiel
-            res.redirect('/good_bad_password')
-            console.log(`Erfolgreich angemeldet als ${user}`)
+            res.redirect('/good_bad_password'); // Oder eine andere Seite, auf die der Benutzer nach dem Login weitergeleitet werden soll
+            console.log(`Erfolgreich angemeldet als ${username}`);
         } else {
-            // Benutzer nicht gefunden
-            console.log('Ungültige Anmeldeinformationen')
+            // Passwörter stimmen nicht überein
+            console.log('Ungültige Anmeldeinformationen');
             res.status(401).send('Ungültige Anmeldeinformationen');
         }
-    });
+    } catch (err) {
+        console.error('Login-Fehler:', err);
+        res.status(500).send('Fehler beim Anmelden des Benutzers');
+    }
 });
 
 app.post('/logout', (req, res) => {
@@ -204,9 +175,13 @@ app.post('/logout', (req, res) => {
 app.get('/userdata', (req, res) => {
     console.log('get userdata')
     if (req.session.loggedIn) {
-        res.json({username: req.session.user.username, points: req.session.user.points,  record: req.session.user.record});
+        res.json({
+            username: req.session.user.username,
+            points: req.session.user.points,
+            record: req.session.user.record
+        });
     } else {
-        res.status(401).json({ message: 'Nicht angemeldet' });
+        res.status(401).json({message: 'Nicht angemeldet'});
     }
 });
 
@@ -214,10 +189,10 @@ app.get('/userdata', (req, res) => {
 app.post('/passwords', (req, res) => {
     let usedPasswords = [];
 
-        var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
+    var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
 
     // Punkte zurücksetzen
-    if (req.session.user !== undefined){
+    if (req.session.user !== undefined) {
         req.session.user.points = 0;
         console.log("Points: " + req.session.user.points)
     }
@@ -230,23 +205,23 @@ app.post('/solve', (req, res) => {
     var password = req.body.password;
     var isGood = req.body.isGood;
     var isCorrect = false;
-
     if (isGood) {
         if (goodPasswords.includes(password)) {
-            isCorrect=true;
+            isCorrect = true;
         }
-    }
-    else
-    {
+    } else {
         if (badPasswords.includes(password)) {
-            isCorrect=true;
+            isCorrect = true;
         }
     }
     console.log(isCorrect)
+    if (users.getHighScoreOneByUsername(req.session.user.username) < req.session.user.points) {
+        users.setHighScoreOne(req.session.user.username, req.session.user.points);
+    }
     // Punkte in aktueller Session speichern und an Client senden
-   // if (isCorrect) {
+    // if (isCorrect) {
     //    req.session.user.points += 1;
-   // }
+    // }
     //req.session.user.points = points;
     res.json({correct: isCorrect});
 });
@@ -254,14 +229,14 @@ app.post('/solve', (req, res) => {
 // Punkte an Client zurückgeben
 app.post('/getScore', (req, res) => {
     console.log('get Score')
-    if (req.session.loggedIn){
+    if (req.session.loggedIn) {
         res.json({points: req.session.user.points});
     } else {
         res.json({points: 0});
     }
 });
 
-app.listen(port, '0.0.0.0',() => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
@@ -284,7 +259,7 @@ function getRandomPassword(goodPasswords, badPasswords, usedPasswords) {
 // Passwörter an Client zurückgeben
 app.post('/getPSSPasswords', (req, res) => {
     console.log('get PSSPasswords')
-    if (req.session.loggedIn){
+    if (req.session.loggedIn) {
         const passwords = generateStrengthPasswords(1);
         res.send(passwords);
     } else {
@@ -293,7 +268,7 @@ app.post('/getPSSPasswords', (req, res) => {
 });
 
 // Funktion zum erstellen der Passwörter für den PSS
-function generateStrengthPasswords(level){
+function generateStrengthPasswords(level) {
     const passwords = [];
     let digits = "0123456789";
     let lower = "abcdefghijklmnopqrstuvwxyz";
@@ -315,23 +290,25 @@ function generateStrengthPasswords(level){
     }
     return passwords;
 }
-function generateGenericPassword(charset, length){
+
+function generateGenericPassword(charset, length) {
     let password = ''
-    for (let i = 0; i < length; i++){
+    for (let i = 0; i < length; i++) {
         const randomIndex = Math.floor(Math.random() * charset.length);
         password += charset[randomIndex];
     }
     return password;
 }
+
 // Ermittelt die Zeit in Sekunden die erforderlich ist um ein Passwort mittels Brute-Force zu knacken
-function getPasswordCrackTime (password) {
+function getPasswordCrackTime(password) {
     let digits = "0123456789";
     let lower = "abcdefghijklmnopqrstuvwxyz";
     let upper = lower.toUpperCase();
     let symbol = "%+-/!,$_";
     let currentCharset = "";
     // charset des passworts ermitteln
-    for (let i = 0; i < password.length; i++){
+    for (let i = 0; i < password.length; i++) {
         if (digits.includes(password[i])) {
             currentCharset += digits;
             digits = "";
@@ -365,7 +342,7 @@ app.post('/solvePSS', (req, res) => {
 
     for (let i = 0; i < passwords.length; i++) {
         // prüft ob die Zei +- 10% genau berechnet wurde
-        if (getPasswordCrackTime(passwords[i]) >=  (solveTime[i]*0.9) && getPasswordCrackTime(passwords[i]) <=  (solveTime[i]*1.1)) {
+        if (getPasswordCrackTime(passwords[i]) >= (solveTime[i] * 0.9) && getPasswordCrackTime(passwords[i]) <= (solveTime[i] * 1.1)) {
             points += 2;
         }
     }

@@ -4,8 +4,9 @@ const mysql = require('mysql');
 // Erstellen einer Verbindung zur Datenbank
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'meinBenutzername',
-    password: 'meinPasswort',
+    port: '3306',
+    user: 'root',
+    password: 'root',
     database: 'passwordgame'
 });
 
@@ -14,13 +15,17 @@ db.connect((err) => {
     console.log('Verbindung zur Datenbank erfolgreich hergestellt');
 });
 
-// Funktion, um einen Benutzer anhand der ID zu holen
-function getUserById(id) {
+function getPasswordByUser(username) {
     return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM users WHERE id = ?';
-        db.query(query, [id], (err, result) => {
+        const query = 'SELECT password FROM users WHERE username = ?';
+        db.query(query, [username], (err, result) => {
             if (err) reject(err);
-            resolve(result[0]);
+            // Stellt sicher, dass ein Ergebnis vorhanden ist, bevor versucht wird, das Passwort zu extrahieren
+            if (result.length > 0) {
+                resolve(result[0].password);
+            } else {
+                reject(new Error('Benutzer nicht gefunden'));
+            }
         });
     });
 }
@@ -39,22 +44,58 @@ async function createUser(userData) {
     });
 }
 
-function getHighScoresById(id) {
+function getHighScoreOneByUsername(username) {
     return new Promise((resolve, reject) => {
-        const query = 'SELECT high_score_one, high_score_two FROM users WHERE id = ?';
-        db.query(query, [id], (err, result) => {
-            if (err) reject(err);
-            resolve(result[0]);
+        const query = 'SELECT high_score_one FROM users WHERE username = ?';
+        db.query(query, [username], (err, result) => {
+            if (err) {
+                reject(err);
+            } else if (result.length > 0) {
+                resolve(result[0].high_score_one);
+            } else {
+                reject(new Error('Benutzer nicht gefunden'));
+            }
         });
     });
 }
 
-function updateHighScore(id, scoreName, newScore) {
+function getHighScoreTwoByUsername(username) {
     return new Promise((resolve, reject) => {
-        const query = `UPDATE users SET ${mysql.escapeId(scoreName)} = ? WHERE id = ?`;
-        db.query(query, [newScore, id], (err, result) => {
-            if (err) reject(err);
-            resolve(result.affectedRows);
+        const query = 'SELECT high_score_two FROM users WHERE username = ?';
+        db.query(query, [username], (err, result) => {
+            if (err) {
+                reject(err);
+            } else if (result.length > 0) {
+                resolve(result[0].high_score_two);
+            } else {
+                reject(new Error('Benutzer nicht gefunden'));
+            }
+        });
+    });
+}
+
+function setHighScoreOne(username, newScore) {
+    return new Promise((resolve, reject) => {
+        const query = 'UPDATE users SET high_score_one = ? WHERE username = ?';
+        db.query(query, [newScore, username], (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve('High Score One erfolgreich aktualisiert');
+            }
+        });
+    });
+}
+
+function setHighScoreTwo(username, newScore) {
+    return new Promise((resolve, reject) => {
+        const query = 'UPDATE users SET high_score_two = ? WHERE username = ?';
+        db.query(query, [newScore, username], (err, result) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve('High Score Two erfolgreich aktualisiert');
+            }
         });
     });
 }
@@ -70,4 +111,4 @@ function checkUsernameExists(username) {
 }
 
 // Exportieren der Funktionen
-module.exports = { getUserById, createUser, getHighScoresById, updateHighScore, checkUsernameExists };
+module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo};

@@ -4,13 +4,11 @@ const app = express({strict: false});
 const port = 3000;
 
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const mysql = require('mysql2');
 
 const users = require('./user');
 
@@ -20,7 +18,7 @@ app.use(cors());
 
 // Sitzungseinrichtung
 app.use(session({
-    secret: 'geheimeSitzungsSchluessel', // ändere dies in einen geheimen Schlüssel
+    secret: '3526cf47c19e869fb63bad0d75b150afe3201bdb0c717822dcc53e1cbcb148e9a7181b28586310806a6805a9cc18f364',
     resave: true,
     saveUninitialized: true,
     cookie: {

@@ -35,6 +35,7 @@ async function createUser(userData) {
     if (usernameExists) {
         throw new Error('Benutzername bereits vergeben');
     }
+    console.log(userData);
     return new Promise((resolve, reject) => {
         const query = 'INSERT INTO users SET ?';
         db.query(query, userData, (err, result) => {

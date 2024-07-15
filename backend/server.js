@@ -149,8 +149,7 @@ app.post('/register', async (req, res) => {
 
 // User login endpoint
 app.post('/login', async (req, res) => {
-    console.log('login');
-    const {user: username, password} = req.body;
+    const {username, password} = req.body;
     try {
         const dbPassword = await users.getPasswordByUser(username);
         const match = await bcrypt.compare(password, dbPassword);

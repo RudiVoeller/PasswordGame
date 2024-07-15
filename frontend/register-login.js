@@ -36,15 +36,15 @@ function onRegister() {
 }
 
 function onLogin() {
-    const email = document.getElementById("user-input").value;
+    const username = document.getElementById("user-input").value;
     const password = document.getElementById("pass-input").value;
-
+    console.log(username)
     fetch('/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ username, password })
     })
     .then(response => {
         if (!response.ok) {

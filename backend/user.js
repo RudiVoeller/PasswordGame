@@ -1,5 +1,5 @@
 // Importieren des MySQL-Moduls
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 // Erstellen einer Verbindung zur Datenbank
 const db = mysql.createConnection({

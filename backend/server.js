@@ -57,6 +57,9 @@ function requireLogin(req, res, next) {
 }
 
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
+});
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
 });
@@ -76,6 +79,11 @@ app.get('/password_strength_sim', requireLogin, (req, res) => {
 app.get('/guess_the_password', requireLogin, (req, res) => {
     console.log('load game guess_the_password')
     res.sendFile(path.join(__dirname, '..', 'frontend', 'guess_the_password.html'));
+});
+
+app.get('/highscore-page', requireLogin, (req, res) => {
+    console.log('load game guess_the_password')
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'highscores.html'));
 });
 
 // Rückgabe der Stylesheets
@@ -99,6 +107,10 @@ app.get('/password_strength_sim.js', (req, res) => {
 app.get('/good_bad_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.js'));
 })
+app.get('/highscores.js', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.js'));
+})
+
 app.get('/guess_the_password.js', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'guess_the_password.js'));
 })

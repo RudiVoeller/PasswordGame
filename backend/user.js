@@ -109,6 +109,15 @@ function checkUsernameExists(username) {
         });
     });
 }
+async function getHighScores() {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT username, high_score_one, high_score_two FROM users ORDER BY high_score_one DESC, high_score_two DESC';
+        db.query(query, (err, results) => {
+            if (err) reject(err);
+            resolve(results);
+        });
+    });
+}
 
 // Exportieren der Funktionen
-module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo};
+module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores};

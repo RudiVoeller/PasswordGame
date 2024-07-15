@@ -159,6 +159,16 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.get('/highscores', async (req, res) => {
+    try {
+        const highScores = await getHighScores(); // Diese Funktion muss in user.js implementiert werden
+        res.json(highScores);
+    } catch (err) {
+        console.error('Fehler beim Abrufen der Highscores:', err);
+        res.status(500).send('Serverfehler beim Abrufen der Highscores');
+    }
+});
+
 app.post('/logout', (req, res) => {
     console.log("Logout")
     req.session.destroy(err => {

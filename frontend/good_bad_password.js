@@ -12,7 +12,6 @@ async function createPassword() {
     if (response.ok) {
 
         let password = await response.text();
-        console.log(password);
             var pw = document.createElement('label');
             pw.textContent = password.toString();
             pw.addEventListener('dragstart', drag);
@@ -79,17 +78,18 @@ async function solve(password, isGood) {
 
     if (result.correct) {
         points++;
-        document.getElementById('userinfo').visible = false;
+        document.getElementById('userinfo').textContent = "Richtige Antwort!";
     }
     else {
         points = 0;
         document.getElementById('userinfo').visible = true;
-    document.getElementById('userinfo').textContent = "Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
+        document.getElementById('userinfo').textContent = "Leider falsch!Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
     }
 
 
 
     document.getElementById('current_score').textContent = points;
+
 }
 
 function onNextGame() {
@@ -105,8 +105,9 @@ function loadUserData() {
             return response.json();
         })
         .then(data => {
+            console.log(data);
             document.getElementById('username').textContent = data.username;
-            document.getElementById('highscore').textContent = data.record;
+            document.getElementById('highscore').textContent = data.record_one;
         })
         .catch(error => {
             console.error('Fehler beim Laden der Benutzerdaten:', error);

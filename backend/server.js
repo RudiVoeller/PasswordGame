@@ -191,13 +191,15 @@ app.post('/logout', (req, res) => {
 });
 
 // Gibt Benutzerdaten (Name aktuellen Punktestand und Rekord an Client zurück)
-app.get('/userdata', (req, res) => {
+app.get('/userdata', async (req, res) => {
     console.log('get userdata')
     if (req.session.loggedIn) {
+
         res.json({
             username: req.session.user.username,
             points: req.session.user.points,
-            record: req.session.user.record
+            record_one: req.session.user.high_score_one = await users.getHighScoreOneByUsername(req.session.user.username),
+            record_two: req.session.user.high_score_two = await users.getHighScoreTwoByUsername(req.session.user.username)
         });
     } else {
         res.status(401).json({message: 'Nicht angemeldet'});
@@ -296,7 +298,7 @@ function generateStrengthPasswords(level) {
     let currentCharset = "";
 
     // Erstellt unterschiedliche passwörter aufgrund des aktuellen levels
-    if (level == 1) {
+    if (level === 1) {
         currentCharset = "";
         currentCharset += digits;
         passwords.push(generateGenericPassword(currentCharset, 6));

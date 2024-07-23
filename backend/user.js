@@ -44,13 +44,13 @@ async function createUser(userData) {
     });
 }
 
-function getHighScoreOneByUsername(username) {
+async function getHighScoreOneByUsername(username) {
     return new Promise((resolve, reject) => {
         const query = 'SELECT high_score_one FROM users WHERE username = ?';
         db.query(query, [username], (err, result) => {
-            if (err) {
-                reject(err);
-            } else if (result.length > 0) {
+            if (err) reject(err);
+            // Stellt sicher, dass ein Ergebnis vorhanden ist, bevor versucht wird, das Passwort zu extrahieren
+            if (result.length > 0) {
                 resolve(result[0].high_score_one);
             } else {
                 reject(new Error('Benutzer nicht gefunden'));
@@ -59,7 +59,7 @@ function getHighScoreOneByUsername(username) {
     });
 }
 
-function getHighScoreTwoByUsername(username) {
+async function getHighScoreTwoByUsername(username) {
     return new Promise((resolve, reject) => {
         const query = 'SELECT high_score_two FROM users WHERE username = ?';
         db.query(query, [username], (err, result) => {

@@ -14,7 +14,8 @@ body {
     width: 90%;
     height: 30px;
     padding: 10px 20px;
-    background-color:#f4f4f4;  /*#f1f1f1*/
+    background-color:burlywood;  /*#f1f1f1*/
+    /*background-color:#f4f4f4;  /*#f1f1f1*/
     border: 1px solid #ccc;
     border-radius: 0 0 5px 5px;
 }
@@ -36,9 +37,14 @@ div.db {
 }
 .box {
     align-items: center;
+    height: auto;
 }
 .flexbox {
     display: flex;
+}
+.tutorial {
+    text-align: left;
+    color: black;
 }
 #result {
     margin-top: 20px;
@@ -52,6 +58,12 @@ div.db {
 }
 
 /* Style für Passwort Sortierer Controls */
+#passwords {
+    background-color: #298e46;
+    min-height: 40px;
+    display: flex;
+    border-radius: 5px;
+}
 
 .category {
     width: 45%;
@@ -62,8 +74,8 @@ div.db {
     min-height: 200px;
 }
 .droppable {
-    display: flex;
-    flex-wrap: wrap;
+    /*display: flex;
+    flex-wrap: wrap;*/
     box-sizing: border-box;
     min-height: 100px;
     border: 2px dashed #ccc;
@@ -72,12 +84,15 @@ div.db {
     padding: 10px;
 }
 .draggable {
-    align-self: flex-start;
+    /*align-self: flex-start;*/
     background-color: #f4f4f4;
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 5px 10px;
-    margin: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: auto;
+    margin-right: auto;
     cursor: move;
 }
 
@@ -129,7 +144,7 @@ input[type="number"]::-webkit-inner-spin-button {
     border-radius: 5px;
 }
 #strength-description {
-    font-size: 1.2em;
+    font-size: 1.0em;
     margin-top: 10px;
 }
 

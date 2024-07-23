@@ -70,10 +70,12 @@ app.get('/register', (req, res) => {
 // Geschützte Route -> Zugriff nur wenn Benutzer angemeldet, ansonsten umleitung auf ../login
 app.get('/good_bad_password', requireLogin, (req, res) => {
     console.log('load game good_bad_password')
+    req.session.user.points = 0;
     res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
 });
 app.get('/password_strength_sim', requireLogin, (req, res) => {
-    console.log('load game password_strength_sim')
+    console.log('load game password_strength_sim');
+    req.session.user.points2 = 0;
     res.sendFile(path.join(__dirname, '..', 'frontend', 'password_strength_sim.html'));
 });
 app.get('/guess_the_password', requireLogin, (req, res) => {
@@ -198,8 +200,9 @@ app.get('/userdata', async (req, res) => {
         res.json({
             username: req.session.user.username,
             points: req.session.user.points,
-            record_one: req.session.user.high_score_one = await users.getHighScoreOneByUsername(req.session.user.username),
-            record_two: req.session.user.high_score_two = await users.getHighScoreTwoByUsername(req.session.user.username)
+            points2: req.session.user.points2,
+            record_one: await users.getHighScoreOneByUsername(req.session.user.username),
+            record_two: await users.getHighScoreTwoByUsername(req.session.user.username)
         });
     } else {
         res.status(401).json({message: 'Nicht angemeldet'});
@@ -213,10 +216,10 @@ app.post('/passwords', (req, res) => {
     var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
 
     // Punkte zurücksetzen
-    if (req.session.user !== undefined) {
-        req.session.user.points = 0;
-        console.log("Points: " + req.session.user.points)
-    }
+    //if (req.session.user !== undefined) {
+    //    req.session.user.points = 0;
+    //    console.log("Points: " + req.session.user.points)
+    //}
     res.status(200).send(password);
 });
 
@@ -229,31 +232,62 @@ app.post('/solve', (req, res) => {
     if (isGood) {
         if (goodPasswords.includes(password)) {
             isCorrect = true;
+            req.session.user.points += 1;
         }
     } else {
         if (badPasswords.includes(password)) {
             isCorrect = true;
+            req.session.user.points += 1;
         }
     }
     console.log(isCorrect)
-    if (users.getHighScoreOneByUsername(req.session.user.username) < req.session.user.points) {
-        users.setHighScoreOne(req.session.user.username, req.session.user.points);
-    }
+    //if (users.getHighScoreOneByUsername(req.session.user.username) < req.session.user.points) {
+    //    console.log('Rekord speichern')
+    //    users.setHighScoreOne(req.session.user.username, req.session.user.points);
+    //}
+    // Rekord in Datenbank speichern    
+   if (isCorrect) {
+        users.getHSOneByUsername(req.session.user.username)
+        .then(highscore => {
+            if (highscore !== null) {
+                console.log('Der aktuelle highscore ist:', highscore);
+                if (highscore < req.session.user.points) {
+                    users.setHighScoreOne(req.session.user.username, req.session.user.points);
+                }
+            } else {
+                console.log('kein highscore gefunden.');
+            }
+            res.json({correct: isCorrect});
+        })
+   } else {
+    users.getHSOneByUsername(req.session.user.username)
+    .then(highscore => {
+        if (highscore !== null) {
+            console.log('Der aktuelle highscore ist:', highscore);
+            if (highscore < req.session.user.points) {
+                users.setHighScoreOne(req.session.user.username, req.session.user.points);
+            }
+            req.session.user.points = 0;
+        } else {
+            console.log('kein highscore gefunden.');
+        }
+        res.json({correct: isCorrect});
+    })
+   }
     // Punkte in aktueller Session speichern und an Client senden
     // if (isCorrect) {
     //    req.session.user.points += 1;
     // }
     //req.session.user.points = points;
-    res.json({correct: isCorrect});
 });
 
 // Punkte an Client zurückgeben
 app.post('/getScore', (req, res) => {
     console.log('get Score')
     if (req.session.loggedIn) {
-        res.json({points: req.session.user.points});
+        res.json({points: req.session.user.points, points2: req.session.user.points2});
     } else {
-        res.json({points: 0});
+        res.json({points: 0, points2: 0});
     }
 });
 
@@ -279,9 +313,10 @@ function getRandomPassword(goodPasswords, badPasswords, usedPasswords) {
 
 // Passwörter an Client zurückgeben
 app.post('/getPSSPasswords', (req, res) => {
+    var level = req.body.level;
     console.log('get PSSPasswords')
     if (req.session.loggedIn) {
-        const passwords = generateStrengthPasswords(1);
+        const passwords = generateStrengthPasswords(level);
         res.send(passwords);
     } else {
         res.end;
@@ -302,12 +337,62 @@ function generateStrengthPasswords(level) {
         currentCharset = "";
         currentCharset += digits;
         passwords.push(generateGenericPassword(currentCharset, 6));
+    } else if (level === 2) {
+        currentCharset = "";
+        currentCharset += digits;
         currentCharset += lower;
         passwords.push(generateGenericPassword(currentCharset, 6));
+    } else if (level === 3) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
         passwords.push(generateGenericPassword(currentCharset, 8));
+    } else if (level === 4) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
         currentCharset += upper;
         passwords.push(generateGenericPassword(currentCharset, 8));
+    } else if (level === 5) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
+        currentCharset += upper;
+        passwords.push(generateGenericPassword(currentCharset, 9));
+    } else if (level === 6) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
+        currentCharset += upper;
         passwords.push(generateGenericPassword(currentCharset, 10));
+    } else if (level === 7) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
+        currentCharset += upper;
+        currentCharset += symbol;
+        passwords.push(generateGenericPassword(currentCharset, 6));
+    } else if (level === 8) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
+        currentCharset += upper;
+        currentCharset += symbol;
+        passwords.push(generateGenericPassword(currentCharset, 8));
+    } else if (level === 9) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
+        currentCharset += upper;
+        currentCharset += symbol;
+        passwords.push(generateGenericPassword(currentCharset, 10));
+    } else if (level === 10) {
+        currentCharset = "";
+        currentCharset += digits;
+        currentCharset += lower;
+        currentCharset += upper;
+        currentCharset += symbol;
+        passwords.push(generateGenericPassword(currentCharset, 12));
     }
     return passwords;
 }
@@ -359,17 +444,43 @@ app.post('/solvePSS', (req, res) => {
     console.log("Solve PSS")
     let passwords = req.body.passwords;
     let solveTime = req.body.solvetime;
-    let points = 0;
+    let korrekt = false;
 
     for (let i = 0; i < passwords.length; i++) {
         // prüft ob die Zei +- 10% genau berechnet wurde
         if (getPasswordCrackTime(passwords[i]) >= (solveTime[i] * 0.9) && getPasswordCrackTime(passwords[i]) <= (solveTime[i] * 1.1)) {
-            points += 2;
+            korrekt = true
+            req.session.user.points2 += 1;
+            // Rekord in Datenbank speichern
+            users.getHSTwoByUsername(req.session.user.username)
+            .then(highscore => {
+                if (highscore !== null) {
+                    console.log('Der aktuelle highscore ist:', highscore);
+                    if (highscore < req.session.user.points2) {
+                        users.setHighScoreTwo(req.session.user.username, req.session.user.points2);
+                    }
+                } else {
+                    console.log('kein highscore gefunden.');
+                }
+                res.json({points: req.session.user.points2, korrekt: korrekt});
+            })
+        } else {
+            // Rekord in Datenbank speichern    
+            users.getHSTwoByUsername(req.session.user.username)
+                .then(highscore => {
+                    if (highscore !== null) {
+                        console.log('Der aktuelle highscore ist:', highscore);
+                        if (highscore < req.session.user.points2) {
+                            users.setHighScoreTwo(req.session.user.username, req.session.user.points2);
+                        }
+                        req.session.user.points2 = 0;
+                    } else {
+                        console.log('kein highscore gefunden.');
+                    }
+                    res.json({points: req.session.user.points2, korrekt: korrekt});
+                })
+            }
         }
-    }
-
-    // Punkte in aktueller Session speichern und an Client senden
-    req.session.user.points += points;
-    res.json({points: points});
+    // res.json({points: req.session.user.points2, korrekt: korrekt});
 });
 

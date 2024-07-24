@@ -95,6 +95,9 @@ app.get('/register-login.css', (req, res) => {
 app.get('/style.css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'style.css'));
 })
+app.get('/Bild_1.jpg'), (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'Bild_1.jpg'));
+}
 
 // Rückgabe der client-js Dateien
 app.get('/script.js', (req, res) => {

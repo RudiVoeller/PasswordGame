@@ -24,13 +24,15 @@ function onRegister() {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Fehler beim Anmelden');
+                throw new Error('Fehler beim Registrieren');
             }
             // Weiterleitung zur nächsten Seite
             window.location.href = '/login';
         })
         .catch(error => {
-            console.error('Anmeldefehler:', error);
+            console.error('Registrierungsfehler:', error);
+            alert("Fehler: " + error.message); // Popup-Fenster anzeigen
+
             // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
         });
 }
@@ -55,6 +57,7 @@ function onLogin() {
     })
     .catch(error => {
         console.error('Anmeldefehler:', error);
+        alert("Fehler: " + error.message); // Popup-Fenster anzeigen
         // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
     });
 }

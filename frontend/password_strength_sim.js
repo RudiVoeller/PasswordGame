@@ -5,6 +5,7 @@ let lower = "abcdefghijklmnopqrstuvwxyz";
 let upper = lower.toUpperCase();
 let symbol = "%+-/!,$_";
 let passwordLength = 10;
+let level = 1;
 
 function updateCharset() {
     const digitValue = document.getElementById("digitSlider").value;
@@ -49,8 +50,7 @@ function generatePassword() {
 
 function updateDisplay() {
     const passwordDisplay = document.getElementById("passwordDisplay");
-    passwordDisplay.innerText = `Aktuelles Passwort: ${password}`;
-
+    //passwordDisplay.innerText = `Aktuelles Passwort: ${password}`;
     updateStrength();
 }
 
@@ -68,7 +68,7 @@ function calculateTimeToCrack(password, currentCharset) {
     const charSetSize = new Set(currentCharset).size;
     const attemptsPerSecond = 1e9; // 1 Milliarde Versuche pro Sekunde
 
-    const combinations = Math.pow(charSetSize, password.length);
+    const combinations = Math.pow(charSetSize, passwordLength);
     const seconds = combinations / attemptsPerSecond;
 
     return Math.floor(seconds);
@@ -109,8 +109,8 @@ function formatTime(seconds) {
 async function getPSSPasswords() {
     const response = await fetch('/getPSSPasswords', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'}
-        //body: JSON.stringify({ passwordsBad, passwordsGood})
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ level})
     });
 
     if (!response.ok) {
@@ -119,10 +119,7 @@ async function getPSSPasswords() {
 
     const data = await response.json();
     document.getElementById('pw1value').textContent = data[0];
-    document.getElementById('pw2value').textContent = data[1];
-    document.getElementById('pw3value').textContent = data[2];
-    document.getElementById('pw4value').textContent = data[3];
-    document.getElementById('pw5value').textContent = data[4];
+    document.getElementById('level').textContent = 'Level: ' + level
 
     //document.getElementById('score').textContent = result.points + " von 10 Punkten"; 
     //document.getElementById('userinfo').textContent = "Automatisch generierter Text zur Verbesserung der Leistung des Spielers.";
@@ -152,9 +149,22 @@ async function onSolve() {
       }
 
     const result = await response.json();
-    document.getElementById('score').textContent = result.points + " von 10 Punkten";
+    if (result.points === 1) {
+        document.getElementById('score').textContent = result.points + " Punkt";
+        document.getElementById('current_score').textContent  = result.points
+    } else {
+        document.getElementById('score').textContent = result.points + " Punkte";
+        document.getElementById('current_score').textContent  = result.points
+    }
 
-    document.getElementById('userinfo').textContent = "Automatisch generierter Text zur Verbesserung der Leistung des Spielers.";
+    if (result.korrekt === true){
+        document.getElementById('userinfo').textContent = "Die Antwort war korrekt!";
+        level +=1;
+        getPSSPasswords();
+    } else {
+        level = 1;
+        document.getElementById('userinfo').textContent = "Die Antwort war leider falsch. Die Stärke eines Passworts wird durch die Länge und den Zeichensatz bestimmt. Prüfe genau ob du alles korrekt eingestllt hast und versuche es erneut.";
+    }
 }
 
 // Funktionen für den Header
@@ -169,7 +179,7 @@ function loadUserData() {
         })
         .then(data => {
             document.getElementById('username').textContent = data.username;
-            document.getElementById('highscore').textContent = data.record;
+            document.getElementById('highscore').textContent = data.record_two;
         })
         .catch(error => {
             console.error('Fehler beim Laden der Benutzerdaten:', error);

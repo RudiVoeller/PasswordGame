@@ -83,7 +83,7 @@ async function solve(password, isGood) {
     else {
         points = 0;
         document.getElementById('userinfo').visible = true;
-        document.getElementById('userinfo').textContent = "Leider falsch!Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
+        document.getElementById('userinfo').textContent = "Leider falsch! Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
     }
 
 

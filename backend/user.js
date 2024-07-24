@@ -1,5 +1,5 @@
 // Importieren des MySQL-Moduls
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 // Erstellen einer Verbindung zur Datenbank
 const db = mysql.createConnection({
@@ -74,6 +74,38 @@ async function getHighScoreTwoByUsername(username) {
     });
 }
 
+function getHSOneByUsername(username) {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT high_score_one FROM users WHERE username = ?';
+        db.query(query, [username], (err, result) => {
+            if (err) {
+                return reject(err);
+            } 
+            if (result.length > 0) {
+                resolve(result[0].high_score_one);
+            } else {
+                resolve(null);
+            }
+        });
+    });
+}
+
+function getHSTwoByUsername(username) {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT high_score_two FROM users WHERE username = ?';
+        db.query(query, [username], (err, result) => {
+            if (err) {
+                return reject(err);
+            } 
+            if (result.length > 0) {
+                resolve(result[0].high_score_two);
+            } else {
+                resolve(null);
+            }
+        });
+    });
+}
+
 function setHighScoreOne(username, newScore) {
     return new Promise((resolve, reject) => {
         const query = 'UPDATE users SET high_score_one = ? WHERE username = ?';
@@ -120,4 +152,4 @@ async function getHighScores() {
 }
 
 // Exportieren der Funktionen
-module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores};
+module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores, getHSTwoByUsername, getHSOneByUsername};

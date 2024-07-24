@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express({strict: false});
 const port = 3000;
-
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const fs = require('fs');
@@ -57,12 +56,16 @@ function requireLogin(req, res, next) {
 }
 
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
-});
+
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
 });
+
+app.get('/', requireLogin, (req, res) => {
+    console.log('load game good_bad_password')
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
+});
+
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'register.html'));
 });
@@ -218,11 +221,6 @@ app.post('/passwords', (req, res) => {
 
     var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
 
-    // Punkte zurücksetzen
-    //if (req.session.user !== undefined) {
-    //    req.session.user.points = 0;
-    //    console.log("Points: " + req.session.user.points)
-    //}
     res.status(200).send(password);
 });
 
@@ -243,22 +241,18 @@ app.post('/solve', (req, res) => {
             req.session.user.points += 1;
         }
     }
-    console.log(isCorrect)
-    //if (users.getHighScoreOneByUsername(req.session.user.username) < req.session.user.points) {
-    //    console.log('Rekord speichern')
-    //    users.setHighScoreOne(req.session.user.username, req.session.user.points);
-    //}
+
     // Rekord in Datenbank speichern    
    if (isCorrect) {
         users.getHSOneByUsername(req.session.user.username)
         .then(highscore => {
             if (highscore !== null) {
-                console.log('Der aktuelle highscore ist:', highscore);
+                console.log('Der aktuelle Highscore ist:', highscore);
                 if (highscore < req.session.user.points) {
                     users.setHighScoreOne(req.session.user.username, req.session.user.points);
                 }
             } else {
-                console.log('kein highscore gefunden.');
+                console.log('Kein highscore gefunden.');
             }
             res.json({correct: isCorrect});
         })
@@ -277,10 +271,7 @@ app.post('/solve', (req, res) => {
         res.json({correct: isCorrect});
     })
    }
-    // Punkte in aktueller Session speichern und an Client senden
-    // if (isCorrect) {
-    //    req.session.user.points += 1;
-    // }
+
     //req.session.user.points = points;
 });
 

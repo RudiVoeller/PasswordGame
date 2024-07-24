@@ -60,6 +60,12 @@ function requireLogin(req, res, next) {
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
 });
+
+app.get('/', requireLogin, (req, res) => {
+    console.log('load game good_bad_password')
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'good_bad_password.html'));
+});
+
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'register.html'));
 });

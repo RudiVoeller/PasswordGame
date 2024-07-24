@@ -57,9 +57,7 @@ function requireLogin(req, res, next) {
 }
 
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
-});
+
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
 });

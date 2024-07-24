@@ -186,8 +186,8 @@ function loadUserData() {
         });
 }
 
-function onNextGame() {
-    window.location.href = '/guess_the_password';
+function onPrevGame() {
+    window.location.href = '/good_bad_password';
 }
 
 // Logout

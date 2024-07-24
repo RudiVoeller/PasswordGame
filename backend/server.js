@@ -22,7 +22,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         secure: false,
-        maxAge: 30 * 60 * 1000 // 1 Minute
+        maxAge: 30 * 60 * 1000 // 30 Minuten
     } // auf true setzen, wenn https verwendet wird
 }));
 
@@ -143,15 +143,15 @@ app.post('/register', async (req, res) => {
         // Aufrufen der createUser Funktion aus user.js
         users.createUser(newUser)
             .then(userId => {
-                res.status(201).json({message: 'Benutzer erfolgreich erstellt', userId: userId});
+                res.status(201).send({message: 'Benutzer erfolgreich erstellt', userId: userId});
             })
             .catch(err => {
                 console.error(err);
-                res.status(500).json({message: 'Fehler beim Erstellen des Benutzers'});
+                res.status(401).send({message: 'Fehler beim Erstellen des Benutzers'});
             });
     } catch (err) {
         console.error('Fehler beim Hashen des Passworts:', err);
-        res.status(500).send('Fehler beim Registrieren des Benutzers');
+        res.status(401).send('Fehler beim Registrieren des Benutzers');
     }
 });
 
@@ -166,6 +166,7 @@ app.post('/login', async (req, res) => {
             req.session.user = {username: username};
             req.session.loggedIn = true;
             res.redirect('/good_bad_password'); // Oder eine andere Seite, auf die der Benutzer nach dem Login weitergeleitet werden soll
+            res.status(202).send('Erfolgreich angemeldet');
             console.log(`Erfolgreich angemeldet als ${username}`);
         } else {
             // Passwörter stimmen nicht überein
@@ -200,9 +201,7 @@ app.post('/logout', (req, res) => {
 
 // Gibt Benutzerdaten (Name aktuellen Punktestand und Rekord an Client zurück)
 app.get('/userdata', async (req, res) => {
-    console.log('get userdata')
     if (req.session.loggedIn) {
-
         res.json({
             username: req.session.user.username,
             points: req.session.user.points,
@@ -271,8 +270,6 @@ app.post('/solve', (req, res) => {
         res.json({correct: isCorrect});
     })
    }
-
-    //req.session.user.points = points;
 });
 
 // Punkte an Client zurückgeben

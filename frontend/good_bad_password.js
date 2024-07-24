@@ -63,7 +63,6 @@ function allowDrop(ev) {
 
 async function solve(password, isGood) {
 
-
     const response = await fetch('http://localhost:3000/solve', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -86,10 +85,8 @@ async function solve(password, isGood) {
         document.getElementById('userinfo').textContent = "Leider falsch! Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
     }
 
-
-
     document.getElementById('current_score').textContent = points;
-
+    loadUserData()
 }
 
 function onNextGame() {

@@ -6,6 +6,31 @@ function onOpenLogin() {
     window.location.href = '/login';
 }
 
+function checkPasswordPolicy(password) {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (password.length < minLength) {
+        return 'Das Passwort muss mindestens 8 Zeichen lang sein.';
+    }
+    if (!hasUpperCase) {
+        return 'Das Passwort muss mindestens einen Großbuchstaben enthalten.';
+    }
+    if (!hasLowerCase) {
+        return 'Das Passwort muss mindestens einen Kleinbuchstaben enthalten.';
+    }
+    if (!hasNumbers) {
+        return 'Das Passwort muss mindestens eine Zahl enthalten.';
+    }
+    if (!hasSpecialChar) {
+        return 'Das Passwort muss mindestens ein Sonderzeichen enthalten.';
+    }
+    return null;
+}
+
 function onRegister() {
     const username = document.getElementById("user-input").value;
     const password = document.getElementById("pass-input").value;
@@ -13,6 +38,11 @@ function onRegister() {
 
     if (password !== passwordRepeat) {
         return alert('Passwörter stimmen nicht überein');
+    }
+
+    const passwordError = checkPasswordPolicy(password);
+    if (passwordError) {
+        return alert(passwordError);
     }
 
     fetch('/register', {
@@ -24,7 +54,9 @@ function onRegister() {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Fehler beim Registrieren');
+                return response.text().then(message => {
+                    throw new Error(message);
+                });
             }
             // Weiterleitung zur nächsten Seite
             window.location.href = '/login';
@@ -35,6 +67,8 @@ function onRegister() {
 
             // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
         });
+
+
 }
 
 function onLogin() {
@@ -50,7 +84,9 @@ function onLogin() {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Fehler beim Anmelden');
+            return response.text().then(message => {
+                throw new Error(message);
+            });
         }
         // Weiterleitung zur nächsten Seite
         window.location.href = '/good_bad_password';

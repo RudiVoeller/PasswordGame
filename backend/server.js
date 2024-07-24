@@ -98,9 +98,6 @@ app.get('/register-login.css', (req, res) => {
 app.get('/style.css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'style.css'));
 })
-app.get('/Bild_1.jpg'), (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'Bild_1.jpg'));
-}
 
 // Rückgabe der client-js Dateien
 app.get('/script.js', (req, res) => {
@@ -125,6 +122,9 @@ app.get('/guess_the_password.js', (req, res) => {
 
 app.get('/pw_game_2.jpeg', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'pw_game_2.jpeg'));
+})
+app.get('/Bild_1.jpg', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'Bild_1.jpg'));
 })
 
 // User registration endpoint

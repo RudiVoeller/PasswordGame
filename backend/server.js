@@ -58,6 +58,7 @@ function requireLogin(req, res, next) {
 // Umleitung auf Startseite bei Aufruf von 'localhost:3000/'
 
 app.get('/login', (req, res) => {
+    console.log('login seite aufrufen')
     res.sendFile(path.join(__dirname, '..', 'frontend', 'login.html'));
 });
 
@@ -157,7 +158,8 @@ app.post('/register', async (req, res) => {
 
 // User login endpoint
 app.post('/login', async (req, res) => {
-    const {username, password} = req.body;
+    const username = req.body.username;
+    const password = req.body.password;
     try {
         const dbPassword = await users.getPasswordByUser(username);
         const match = await bcrypt.compare(password, dbPassword);
@@ -165,7 +167,8 @@ app.post('/login', async (req, res) => {
             // Passwörter stimmen überein
             req.session.user = {username: username};
             req.session.loggedIn = true;
-            res.redirect('/good_bad_password'); // Oder eine andere Seite, auf die der Benutzer nach dem Login weitergeleitet werden soll
+            res.json({loggedIn: true})
+            //res.redirect('/good_bad_password'); // Oder eine andere Seite, auf die der Benutzer nach dem Login weitergeleitet werden soll
             console.log(`Erfolgreich angemeldet als ${username}`);
         } else {
             // Passwörter stimmen nicht überein

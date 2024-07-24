@@ -43,17 +43,16 @@ function onLogin() {
     console.log(username)
     fetch('/login', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username: username, password: password })
     })
     .then(response => {
+        print(!response.ok);
         if (!response.ok) {
             throw new Error('Fehler beim Anmelden');
+        } else {
+            window.location.href = '/good_bad_password';
         }
-        // Weiterleitung zur nächsten Seite
-        window.location.href = '/good_bad_password';
     })
     .catch(error => {
         console.error('Anmeldefehler:', error);

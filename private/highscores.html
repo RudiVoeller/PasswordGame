@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highscores</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="header">
+        <input type="button" value="Logout" class="logout-button" onclick="onLogout()">
+        <div class="db" id="highscore">0</div><div>High Score: </div>
+        <div class="db" id="username">***</div><div>User: </div> 
+    </div>
+
+<h1>Highscores</h1>
+
+<div class="container">
+    <div class="box">
+        <table id="highscore-list">
+            <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script src="/script/highscores.js"></script>
+</body>
+</html>

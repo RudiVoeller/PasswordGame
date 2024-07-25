@@ -10,7 +10,7 @@
 <body>
     <div class="header">
         <input type="button" value="Logout" class="logout-button" onclick="onLogout()">
-        <div class="db" id="highscore">0</div><div>High Score: </div>
+        <!-- <div class="db" id="highscore">0</div><div>High Score: </div> -->
         <div class="db" id="username">***</div><div>User: </div> 
     </div>
 
@@ -18,13 +18,45 @@
 
 <div class="container">
     <div class="box">
-        <table id="highscore-list">
-            <tr>
-                <th>Rank</th>
-                <th>Username</th>
-                <th>Score</th>
-            </tr>
-        </table>
+        <div class="flexbox">
+            <div style="width: 50%;">
+                <h2>Passwort Sortierer</h2>
+                <table border="1" id="Table1">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamisch gefüllte Daten -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="width: 50%;">
+                <h2>Passwort Stärke Simulator</h2>
+                <table border="1" id="Table2">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamisch gefüllte Daten -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div id="bar-div">
+        <input class="button m" id="prev-game" type="button" value="Vorheriges Spiel" onclick="onPrevGame()">
+        <input class="button m" id="current-game" type="button" value="Reload" onclick="onReload()">
+        <input class="button m" id="leaderboard" type="button" value="Passwort Sortierer" onclick="onLeaderboard()">
     </div>
 </div>
 

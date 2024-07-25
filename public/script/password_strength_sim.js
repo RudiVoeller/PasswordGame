@@ -204,20 +204,24 @@ async function onLeaderboard() {
 
 // Logout
 function onLogout() {
+    // Entferne den JWT aus dem localStorage
+    //localStorage.removeItem('token');
+
+    // Optional: Informiere den Server über den Logout
     fetch('/logout', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'}
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Fehler beim Abmelden');
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token: localStorage.getItem('token') })
+    }).then(response => {
+        if (response.ok) {
+            // Weiterleitung zur Login-Seite oder Anzeige einer Logout-Bestätigung
+            localStorage.removeItem('token');
+            window.location.href = '/login';
         }
-        // Weiterleitung zur nächsten Seite
-        window.location.href = '/';
-    })
-    .catch(error => {
-        console.error('Abmeldefehler:', error);
-        // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
+    }).catch(error => {
+        console.error('Fehler beim Logout:', error);
     });
 }
 

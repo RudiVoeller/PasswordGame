@@ -10,6 +10,7 @@ const users = require('./user');
 
 // Server Token
 const ACCESS_TOKEN_SECRET = '3526cf47c19e869fb63bad0d75b150afe3201bdb0c717822dcc53e1cbcb148e9a7181b28586310806a6805a9cc18f364';
+const blacklistedTokens = new Set();
 
 // middleware Funktion zum Prüfen auf ein gültiges Token
 const authenticateToken = (req, res, next) => {
@@ -17,6 +18,10 @@ const authenticateToken = (req, res, next) => {
     //const token = authHeader && authHeader.split(' ')[1];
     const token = req.query.token;
     if (token == null) return res.sendStatus(401); // Kein Token vorhanden
+
+    if (blacklistedTokens.has(token)) {
+        return res.status(401).send('Token ist ungültig.');
+    }
 
     jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) return res.sendStatus(403); // Ungültiges Token
@@ -108,6 +113,17 @@ app.post('/login', async (req, res) => {
         res.status(500).send('Fehler beim Anmelden des Benutzers');
     }
 })
+app.post('/logout', async (req, res) => {
+    console.log('/logout')
+    const { token } = req.body;
+    if (token) {
+        blacklistedTokens.add(token);
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(400);
+    }
+})
+
 app.post('/register', (req, res) => {
     console.log("register")
     const username = req.body.username;
@@ -425,17 +441,15 @@ app.post('/solvePSS', (req, res) => {
 });
 //#region Highscore
 // Route zum Abrufen der Daten
-app.get('/getScores', (req, res) => {
-    const query = 'SELECT username, score1, score3 FROM your_table';
-    connection.query(query, (error, results) => {
-      if (error) {
-        console.error('Fehler beim Abrufen der Daten:', error);
-        res.status(500).send('Fehler beim Abrufen der Daten');
-        return;
-      }
-      res.json(results);
-    });
-  });
+app.get('/getScoresOne', async (req, res) => {
+    const boardOne = await users.getLeaderboardOne()
+    res.json(boardOne);
+  })
+  // Route zum Abrufen der Daten
+app.get('/getScoresTwo', async (req, res) => {
+    const boardTwo = await users.getLeaderboardTwo()
+    res.json(boardTwo);
+  })
 
 app.listen(3000, '0.0.0.0', () => {
     console.log(`Server running at http://localhost:3000`);

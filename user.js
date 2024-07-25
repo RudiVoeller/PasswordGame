@@ -150,16 +150,36 @@ async function getHighScores() {
         });
     });
 }
-function getLeaderboard() {
-    const query = 'SELECT username, high_score_one, high_score_two FROM users';
-    connection.query(query, (error, results) => {
-      if (error) {
-        console.error('Fehler beim Abrufen der Daten:', error);
-        return;
-      }
-      return json(results);
-  });
+function getLeaderboardOne() {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT username, high_score_one FROM users Order By high_score_one desc';
+        db.query(query, (err, result) => {
+            if (err) {
+                return reject(err);
+            } 
+            if (result.length > 0) {
+                resolve(result);
+            } else {
+                resolve(null);
+            }
+        });
+    });
+}
+function getLeaderboardTwo() {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT username, high_score_two FROM users Order By high_score_two desc';
+        db.query(query, (err, result) => {
+            if (err) {
+                return reject(err);
+            } 
+            if (result.length > 0) {
+                resolve(result);
+            } else {
+                resolve(null);
+            }
+        });
+    });
 }
 
 // Exportieren der Funktionen
-module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores, getHSTwoByUsername, getHSOneByUsername, getLeaderboard};
+module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores, getHSTwoByUsername, getHSOneByUsername, getLeaderboardOne, getLeaderboardTwo};

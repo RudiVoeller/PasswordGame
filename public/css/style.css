@@ -43,9 +43,15 @@ div.db {
     align-items: center;
     height: auto;
 }
+
 .flexbox {
     display: flex;
 }
+
+.flexbox .box {
+    width: 50%;
+}
+
 .tutorial {
     text-align: left;
     color: black;
@@ -72,7 +78,7 @@ div.db {
 .category {
     width: 45%;
     border: 2px solid #333;
-    background-color: #9a9a;
+    background-color:#ccc;
     border-radius: 5px;
     padding: 10px;
     margin: 20px;
@@ -83,7 +89,7 @@ div.db {
     flex-wrap: wrap;*/
     box-sizing: border-box;
     min-height: 100px;
-    border: 2px dashed #ccc;
+    border: 2px dashed #888;
     border-radius: 5px;
     margin-top: 10px;
     padding: 10px;
@@ -108,6 +114,7 @@ div.db {
     margin-right: 10%;
     margin-top: 5%;
     margin-bottom: 5%;
+    min-width: 500px;
     border: 2px solid #ccc;
     border-radius: 5px;
     padding-top: 10px;
@@ -198,6 +205,9 @@ tfoot {
 }
 
 /* Style für Guess the Password */
+.tablediv{
+    width: 50%;
+}
 
 img {
     width: 60%;
@@ -267,4 +277,35 @@ img {
 
 .logout-button:focus {
     outline: none;
+}
+
+@media (max-width: 1400px) {
+    .flexbox {
+        display: block;
+    }
+    .category {
+        width: 80%;
+        margin-left: 10%;
+        margin-right: 10%;
+    }
+    .flexbox .box {
+        margin: 0;
+        padding: 0;
+        min-width: 0;
+        width: 100%;
+    }
+    .boxframe {
+        min-width: 0;
+        width: 80%;
+    }
+    .controls label {
+        display: inline-block;
+        width: 60%;
+        text-align: left;
+    }
+    .tablediv{
+        width: 80%;
+        margin-left: 10%;
+        margin-right: 10%;
+    }
 }

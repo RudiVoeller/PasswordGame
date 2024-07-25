@@ -140,6 +140,13 @@ async function onSolve() {
         solvetime.push(DOMsolvetime[i].value);
     }
 
+    console.log(`länge ${solvetime.length} typ ${solvetime[0].length > 0}  >0 ${solvetime[0] >= 0}`)
+    if (solvetime.length > 0 && solvetime[0].length > 0 && solvetime[0] >= 0) {
+        
+    } else {
+        return alert('Bitte eine Zeit in Sekunden >= 0 eingeben.');
+    }
+
     const response = await fetch('/solvePSS', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},

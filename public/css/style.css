@@ -33,7 +33,7 @@ div.db {
     width: 80%;
     min-width: 250px;
     text-align: center;
-    background-color: #888;
+    background-color: #999;
     margin-top: 20px;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -72,6 +72,7 @@ div.db {
 .category {
     width: 45%;
     border: 2px solid #333;
+    background-color: #9a9a;
     border-radius: 5px;
     padding: 10px;
     margin: 20px;
@@ -110,7 +111,7 @@ div.db {
     border: 2px solid #ccc;
     border-radius: 5px;
     padding-top: 10px;
-    background-color: #999;
+    background-color: #aaa;
 }
 .controls {
     margin-bottom: 20px;
@@ -175,7 +176,7 @@ th, td {
 }
 
 th {
-    background-color: #f4f4f4;
+    background-color:#94d3a2;
     font-weight: bold;
 }
 
@@ -184,7 +185,7 @@ tr:nth-child(even) {
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color:cadetblue;
 }
 
 thead {

@@ -1,27 +1,40 @@
-<script src="script/register.js"></script>
-<link href="css/register-login.css" rel="stylesheet">
-<!------ Include the above in your HEAD tag ---------->
-
-<div class="box">
-    <div class="sidenav" style="position: relative;">
-        <div class="login-main-text">
-            WebSec Games<br>Register Page
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSec Games</title>
+    <link href="css/register-login.css" rel="stylesheet">
+</head>
+<body>
+    <div class="box">
+        <div class="sidenav" style="position: relative;">
+            <div class="login-main-text">
+                WebSec Games<br>Register Page
+            </div>
         </div>
-    </div>
-    <div class="main">
-        <div class="col-md-6 col-sm-12">
-            <div class="login-form">
-                <form class="input-form">
-                    <div class="form-group">
-                        <label>Login</label><br>
-                        <input type="text" id="user-input" class="form-control" placeholder="Username"><br>
-                        <input type="password" id="pass-input" class="form-control" placeholder="Password"><br>
-                        <input type="password" id="pass-confirm-input" class="form-control" placeholder="Confirm Password"><br>
+        <div class="main">
+            <div class="login-container">
+                <form id="login-form">
+                    <h2>Registrieren</h2>
+                    <div class="input-group">
+                        <input type="text" id="user-input" required>
+                        <label for="username">Benutzername</label>
                     </div>
-                    <button type="button" class="btn btn-black" onclick="onRegister()">Register</button><br>
-                    <button type="button" class="btn btn-secondary" onclick="onOpenLogin()">Login</button>
+                    <div class="input-group">
+                        <input type="password" id="pass-input" required>
+                        <label for="password">Passwort</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="pass-confirm-input" required>
+                        <label for="password">Passwort wiederholung</label>
+                    </div>
+                    <button type="submit">Registrieren</button>
+                    <button id="btn_login">Zurück zum Login</button>
                 </form>
             </div>
         </div>
     </div>
-</div>
+</body>
+<script src="script/register.js"></script>
+</html>

@@ -1,3 +1,54 @@
+// Event für Login Button hinzufügen
+document.getElementById('login-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById("user-input").value;
+    const password = document.getElementById("pass-input").value;
+    const passwordRepeat = document.getElementById("pass-confirm-input").value;
+
+    if (password !== passwordRepeat) {
+        return alert('Passwörter stimmen nicht überein');
+    }
+
+    const passwordError = checkPasswordPolicy(password);
+    if (passwordError) {
+        return alert(passwordError);
+    }
+
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        console.log('Serverantwort:', data);
+
+        if (response.ok) {
+            // Weiterleitung auf die neue Seite
+            window.location.href = `/login`;
+        } else {
+            alert('Benutzer ist bereits vorhanden!')
+            console.log('Fehlgeschlagene Registrierung:', data.message);
+            errorMessage.textContent = 'Registrierung fehlgeschlagen: ' + data.message;
+            errorMessage.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Netzwerk- oder Serverfehler:', error);
+        errorMessage.textContent = 'Registrierung fehlgeschlagen: Netzwerk- oder Serverfehler';
+        errorMessage.style.display = 'block';
+    }
+});
+
+// Event für Login Button hinzufügen
+document.getElementById('btn_login').addEventListener('click', async function(event) {
+    event.preventDefault();
+    window.location.href = '/login';
+})
+
 function checkPasswordPolicy(password) {
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -21,75 +72,4 @@ function checkPasswordPolicy(password) {
         return 'Das Passwort muss mindestens ein Sonderzeichen enthalten.';
     }
     return null;
-}
-
-function onRegister() {
-    const username = document.getElementById("user-input").value;
-    const password = document.getElementById("pass-input").value;
-    const passwordRepeat = document.getElementById("pass-confirm-input").value;
-
-    if (password !== passwordRepeat) {
-        return alert('Passwörter stimmen nicht überein');
-    }
-
-    const passwordError = checkPasswordPolicy(password);
-    if (passwordError) {
-        return alert(passwordError);
-    }
-
-    fetch('/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(message => {
-                    throw new Error(message);
-                });
-            }
-            // Weiterleitung zur nächsten Seite
-            window.location.href = '/login';
-        })
-        .catch(error => {
-            console.error('Registrierungsfehler:', error);
-            alert("Fehler: " + error.message); // Popup-Fenster anzeigen
-
-            // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
-        });
-}
-
-function onLogin() {
-    const username = document.getElementById("user-input").value;
-    const password = document.getElementById("pass-input").value;
-    console.log(username)
-    fetch('/login', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ username: username, password: password })
-    })
-    .then(response => {
-        print(!response.ok);
-        if (!response.ok) {
-            return response.text().then(message => {
-                throw new Error(message);
-            });
-        }
-        window.location.href = '/good_bad_password';
-    })
-    .catch(error => {
-        console.error('Anmeldefehler:', error);
-        alert("Fehler: " + error.message); // Popup-Fenster anzeigen
-        // Fehlerbehandlung hier, z.B. Fehlermeldung anzeigen
-    });
-}
-
-function onOpenRegister() {
-    window.location.href = '/register';
-}
-
-function onOpenLogin() {
-    window.location.href = '/login';
 }

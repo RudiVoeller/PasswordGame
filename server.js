@@ -124,12 +124,12 @@ app.post('/logout', async (req, res) => {
     }
 })
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
     console.log("register")
     const username = req.body.username;
     const password = req.body.password;
     try {
-        const hashedPassword = bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
         // Erstellen eines neuen Benutzerobjekts mit dem gehashten Passwort
         const newUser = {
             username: username,
@@ -274,7 +274,7 @@ app.post('/getScore', (req, res) => {
 // Passwörter an Client zurückgeben
 app.post('/getPSSPasswords', (req, res) => {
     var level = req.body.level;
-    console.log(`/get PSSPasswords ${level}`)
+    console.log(`/get PSSPasswords - Level ${level}`)
     const passwords = generateStrengthPasswords(level);
     res.json({passwords: passwords});
 });

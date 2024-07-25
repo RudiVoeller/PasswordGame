@@ -1,16 +1,15 @@
 body {
-    background-image: url('../img/Bild_1.jpg');
-    background-repeat: no-repeat;
-    background-size: 100vh;
+    /*background-image: url('../img/Bild_1.jpg');*/
+    /*background-repeat: no-repeat;*/
+    /*background-size: 100vh 100vh;*/
     /*background-size: cover;*/
-
+    background-color:#f1f1f1;
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f4f4f4;
 }
 .header {
     display: flex;
@@ -34,7 +33,7 @@ div.db {
     width: 80%;
     min-width: 250px;
     text-align: center;
-    background-color: #fff;
+    background-color: #888;
     margin-top: 20px;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -103,10 +102,15 @@ div.db {
 
 /* Style für Passwort Strength Simulatot Controls */
 .boxframe {
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    margin-top: 5%;
+    margin-bottom: 5%;
     border: 2px solid #ccc;
     border-radius: 5px;
-    margin: 5%;
     padding-top: 10px;
+    background-color: #999;
 }
 .controls {
     margin-bottom: 20px;
@@ -156,7 +160,9 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Style für Leaderboard */
 
 table {
-    width: 100%;
+    margin-right: 10%;
+    margin-left: 10%;
+    width: 80%;
     border-collapse: collapse;
     margin-bottom: 40px;
     box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);

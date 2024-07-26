@@ -26,6 +26,11 @@ function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.id);
 }
 
+async function onLeaderboard() {
+    const token = localStorage.getItem('token');
+    window.location.href = `/highscores?token=${encodeURIComponent(token)}`;
+}
+
 function drop(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");

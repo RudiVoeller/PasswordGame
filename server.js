@@ -103,6 +103,8 @@ app.post('/login', async (req, res) => {
             //req.session.loggedIn = true;
             const accessToken = jwt.sign(user, ACCESS_TOKEN_SECRET,  { expiresIn: '1h' })
             res.json({accessToken: accessToken, success: true})
+            res.status(200).send({message: 'Benutzer erfolgreich eingeloggt'});
+
         } else {
             // Passwörter stimmen nicht überein
             console.log('Ungültige Anmeldeinformationen')
@@ -140,7 +142,7 @@ app.post('/register', async (req, res) => {
         // Aufrufen der createUser Funktion aus user.js
         users.createUser(newUser)
             .then(userId => {
-                res.status(201).send({message: 'Benutzer erfolgreich erstellt', userId: userId});
+                res.status(201).send({message: 'Benutzer erfolgreich erstellt'});
             })
             .catch(err => {
                 console.error(err);
@@ -170,8 +172,7 @@ app.get('/userdata', async (req, res) => {
 //#region good_bad_password
 // Passwort Sortierer
 app.post('/passwords', (req, res) => {
-    let usedPasswords = [];
-    var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
+    var password = getRandomPassword(goodPasswords, badPasswords);
     res.status(200).send(password);
 });
 function getRandomItem(array) {
@@ -179,14 +180,11 @@ function getRandomItem(array) {
     return array[randomIndex];
 }
 // Funktion, um ein zufälliges Passwort anzuzeigen
-function getRandomPassword(goodPasswords, badPasswords, usedPasswords) {
+function getRandomPassword(goodPasswords, badPasswords) {
     // 50% Chance, ein gutes oder schlechtes Passwort zu wählen
     const isGoodPassword = Math.random() < 0.5;
-    const password = isGoodPassword ? getRandomItem(goodPasswords) : getRandomItem(badPasswords);
-    if (password in usedPasswords) {
-        return getRandomPassword(goodPasswords, badPasswords, usedPasswords);
-    }
-    return password
+    return isGoodPassword ? getRandomItem(goodPasswords) : getRandomItem(badPasswords);
+
 }
 // Passwort Sortierer Punkte berechnen
 app.post('/solve', async (req, res) => {

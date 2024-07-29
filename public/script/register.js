@@ -13,7 +13,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
     const passwordError = checkPasswordPolicy(password);
     if (passwordError) {
         return alert(passwordError);
-    }
+    } 
 
     try {
         const response = await fetch('/register', {

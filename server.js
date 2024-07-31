@@ -40,7 +40,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         secure: false,
-        maxAge: 30 * 60 * 1000 // 30 Minuten
+        maxAge: 60 * 60 * 1000 // 60 Minuten
     } // auf true setzen, wenn https verwendet wird
 }));
 
@@ -169,7 +169,6 @@ app.get('/userdata', async (req, res) => {
     }
 });
 
-//#region good_bad_password
 // Passwort Sortierer
 app.post('/passwords', (req, res) => {
     var password = getRandomPassword(goodPasswords, badPasswords);
@@ -267,7 +266,6 @@ app.post('/getScore', (req, res) => {
         res.json({points: 0, points2: 0});
     }
 });
-//#region password-strength-sim
 // Passwort Stärke Simulator
 // Passwörter an Client zurückgeben
 app.post('/getPSSPasswords', (req, res) => {
@@ -409,7 +407,7 @@ app.post('/solvePSS', (req, res) => {
             users.getHSTwoByUsername(req.session.user.username)
             .then(highscore => {
                 if (highscore !== null) {
-                    console.log('Der aktuelle highscore ist:', highscore);
+                    console.log('Der aktuelle Highscore ist:', highscore);
                     if (highscore < req.session.points2) {
                         users.setHighScoreTwo(req.session.user.username, req.session.points2);
                     }
@@ -437,9 +435,9 @@ app.post('/solvePSS', (req, res) => {
         }
     // res.json({points: req.session.user.points2, korrekt: korrekt});
 });
-//#region Highscore
 // Route zum Abrufen der Daten
-app.get('/getScoresOne', async (req, res) => {
+app.get('/' +
+    'getScoresOne', async (req, res) => {
     const boardOne = await users.getLeaderboardOne()
     res.json(boardOne);
   })

@@ -28,7 +28,7 @@ async function fetchScoresTwo() {
     });
 }
 
-function onPrevGame() {
+function onSecondGame() {
     const token = localStorage.getItem('token');
     window.location.href = `/password_strength_sim?token=${encodeURIComponent(token)}`;
 }
@@ -36,7 +36,7 @@ async function onReload() {
     const token = localStorage.getItem('token');
     window.location.href = `/highscores?token=${encodeURIComponent(token)}`;
 }
-async function onLeaderboard() {
+async function onFirstGame() {
     const token = localStorage.getItem('token');
     window.location.href = `/good_bad_password?token=${encodeURIComponent(token)}`;
 }

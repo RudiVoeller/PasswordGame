@@ -25,7 +25,6 @@ document.getElementById('login-form').addEventListener('submit', async function(
         });
 
         const data = await response.json();
-        console.log('Serverantwort:', data);
 
         if (response.ok) {
             // Weiterleitung auf die neue Seite

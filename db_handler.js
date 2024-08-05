@@ -181,5 +181,31 @@ function getLeaderboardTwo() {
     });
 }
 
+function getGoodPasswordsFromDB() {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT password FROM goodpasswords';
+        db.query(query, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(results.map(row => row.password));
+        });
+    });
+}
+
+function getBadPasswordsFromDB() {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT password FROM badpasswords';
+        db.query(query, (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve(results.map(row => row.password));
+        });
+    });
+}
+
+
+
 // Exportieren der Funktionen
-module.exports = { getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores, getHSTwoByUsername, getHSOneByUsername, getLeaderboardOne, getLeaderboardTwo};
+module.exports = { getBadPasswordsFromDB, getGoodPasswordsFromDB, getPasswordByUser, createUser, getHighScoreOneByUsername, getHighScoreTwoByUsername, setHighScoreOne, setHighScoreTwo, getHighScores, getHSTwoByUsername, getHSOneByUsername, getLeaderboardOne, getLeaderboardTwo};

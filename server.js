@@ -1,12 +1,11 @@
 const express = require('express');
 const app = express();
-const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
 // User funktionen zugänglich machen
-const users = require('./user');
+const dbHandler = require('./db_handler');
 
 // Server Token
 const ACCESS_TOKEN_SECRET = '3526cf47c19e869fb63bad0d75b150afe3201bdb0c717822dcc53e1cbcb148e9a7181b28586310806a6805a9cc18f364';
@@ -44,19 +43,20 @@ app.use(session({
     } // auf true setzen, wenn https verwendet wird
 }));
 
-if (fs.existsSync('passwords.json')) {
+let goodPasswords = [];
+let badPasswords = [];
+
+async function loadPasswords() {
     try {
-        data = fs.readFileSync('passwords.json', 'utf8');
-        console.log('Datei erfolgreich gelesen');
-    } catch (err) {
-        console.error('Fehler beim Lesen der Datei:', err);
+        goodPasswords = await dbHandler.getGoodPasswordsFromDB();
+        badPasswords = await dbHandler.getBadPasswordsFromDB();
+    } catch (error) {
+        console.error('Fehler beim Laden der Passwörter:', error);
     }
-} else {
-    console.error('Datei existiert nicht');
 }
-let passwords = JSON.parse(data);
-let goodPasswords = passwords.goodPasswords;
-let badPasswords = passwords.badPasswords;
+
+// Lade Passwörter unabhängig vom Server-Start
+loadPasswords();
 
 let privatePath = path.join(__dirname, 'private')
 let publicPath = path.join(__dirname, 'public')
@@ -94,7 +94,7 @@ app.post('/login', async (req, res) => {
     const password = req.body.password;
     const user = {username: username};
     try {
-        const dbPassword = await users.getPasswordByUser(username)
+        const dbPassword = await dbHandler.getPasswordByUser(username)
         const match = await bcrypt.compare(password, dbPassword)
         if (match) {
             // Passwörter stimmen überein
@@ -137,8 +137,8 @@ app.post('/register', async (req, res) => {
             high_score_one: 0,
             high_score_two: 0
         };
-        // Aufrufen der createUser Funktion aus user.js
-        users.createUser(newUser)
+        // Aufrufen der createUser Funktion aus db_handler.js
+        dbHandler.createUser(newUser)
             .then(userId => {
                 res.status(201).send({message: 'Benutzer erfolgreich erstellt', userId: userId});
             })
@@ -159,8 +159,8 @@ app.get('/userdata', async (req, res) => {
             username: await req.session.user.username,
             points:  await req.session.points,
             points2: await req.session.points2,
-            record_one: await users.getHighScoreOneByUsername(req.session.user.username),
-            record_two: await users.getHighScoreTwoByUsername(req.session.user.username)
+            record_one: await dbHandler.getHighScoreOneByUsername(req.session.user.username),
+            record_two: await dbHandler.getHighScoreTwoByUsername(req.session.user.username)
         });
     } else {
         res.status(401).json({message: 'Nicht angemeldet'});
@@ -199,11 +199,11 @@ app.post('/solve', async (req, res) => {
         req.session.points = (req.session.points || 0) + 1; // Initialisiere, falls undefined
         console.log("Antwort ist korrekt");
         try {
-            const highscore = await users.getHSOneByUsername(req.session.user.username);
+            const highscore = await dbHandler.getHSOneByUsername(req.session.user.username);
             if (highscore !== null) {
                 console.log('Der aktuelle Highscore ist:', highscore);
                 if (highscore < req.session.points) {
-                    await users.setHighScoreOne(req.session.user.username, req.session.points);
+                    await dbHandler.setHighScoreOne(req.session.user.username, req.session.points);
                 }
                 console.log('Session Punkte: ' + req.session.points);
             } else {
@@ -219,11 +219,11 @@ app.post('/solve', async (req, res) => {
         req.session.points = (req.session.points || 0) + 1; // Initialisiere, falls undefined
         console.log("Antwort ist korrekt");
         try {
-            const highscore = await users.getHSOneByUsername(req.session.user.username);
+            const highscore = await dbHandler.getHSOneByUsername(req.session.user.username);
             if (highscore !== null) {
                 console.log('Der aktuelle Highscore ist:', highscore);
                 if (highscore < req.session.points) {
-                    await users.setHighScoreOne(req.session.user.username, req.session.points);
+                    await dbHandler.setHighScoreOne(req.session.user.username, req.session.points);
                 }
                 console.log('Session Punkte: ' + req.session.points);
             } else {
@@ -239,11 +239,11 @@ app.post('/solve', async (req, res) => {
         console.log("Antwort ist Falsch");
         req.session.points = (req.session.points || 0); // Initialisiere, falls undefined
         try {
-            const highscore = await users.getHSOneByUsername(req.session.user.username);
+            const highscore = await dbHandler.getHSOneByUsername(req.session.user.username);
             if (highscore !== null) {
                 console.log('Der aktuelle Highscore ist:', highscore);
                 if (highscore < req.session.points) {
-                    await users.setHighScoreOne(req.session.user.username, req.session.points);
+                    await dbHandler.setHighScoreOne(req.session.user.username, req.session.points);
                     req.session.points = 0
                 }
                 console.log('Session Punkte: ' + req.session.points);
@@ -408,12 +408,12 @@ app.post('/solvePSS', (req, res) => {
             korrekt = true
             req.session.points2 = (req.session.points2 || 0) + 1;
             // Rekord in Datenbank speichern
-            users.getHSTwoByUsername(req.session.user.username)
+            dbHandler.getHSTwoByUsername(req.session.user.username)
             .then(highscore => {
                 if (highscore !== null) {
                     console.log('Der aktuelle highscore ist:', highscore);
                     if (highscore < req.session.points2) {
-                        users.setHighScoreTwo(req.session.user.username, req.session.points2);
+                        dbHandler.setHighScoreTwo(req.session.user.username, req.session.points2);
                     }
                 } else {
                     console.log('kein highscore gefunden.');
@@ -422,12 +422,12 @@ app.post('/solvePSS', (req, res) => {
             })
         } else {
             // Rekord in Datenbank speichern    
-            users.getHSTwoByUsername(req.session.user.username)
+            dbHandler.getHSTwoByUsername(req.session.user.username)
                 .then(highscore => {
                     if (highscore !== null) {
                         console.log('Der aktuelle highscore ist:', highscore);
                         if (highscore < req.session.points2) {
-                            users.setHighScoreTwo(req.session.user.username, req.session.points2);
+                            dbHandler.setHighScoreTwo(req.session.user.username, req.session.points2);
                         }
                         req.session.points2 = 0;
                     } else {
@@ -442,12 +442,12 @@ app.post('/solvePSS', (req, res) => {
 //#region Highscore
 // Route zum Abrufen der Daten
 app.get('/getScoresOne', async (req, res) => {
-    const boardOne = await users.getLeaderboardOne()
+    const boardOne = await dbHandler.getLeaderboardOne()
     res.json(boardOne);
   })
   // Route zum Abrufen der Daten
 app.get('/getScoresTwo', async (req, res) => {
-    const boardTwo = await users.getLeaderboardTwo()
+    const boardTwo = await dbHandler.getLeaderboardTwo()
     res.json(boardTwo);
   })
 

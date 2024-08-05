@@ -167,11 +167,14 @@ async function onSolve() {
     }
 
     if (result.korrekt === true){
+        document.getElementById('userinfo').style.color = "green";
         document.getElementById('userinfo').textContent = "Die Antwort war korrekt!";
         level +=1;
         getPSSPasswords();
     } else {
         level = 1;
+        document.getElementById('userinfo').style.color = "red";
+
         document.getElementById('userinfo').textContent = "Die Antwort war leider falsch. Die Stärke eines Passworts wird durch die Länge und den Zeichensatz bestimmt. Prüfe genau ob du alles korrekt eingestllt hast und versuche es erneut.";
     }
 }

@@ -13,7 +13,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
     const passwordError = checkPasswordPolicy(password);
     if (passwordError) {
         return alert(passwordError);
-    }
+    } 
 
     try {
         const response = await fetch('/register', {
@@ -25,7 +25,6 @@ document.getElementById('login-form').addEventListener('submit', async function(
         });
 
         const data = await response.json();
-        console.log('Serverantwort:', data);
 
         if (response.ok) {
             // Weiterleitung auf die neue Seite

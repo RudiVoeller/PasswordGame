@@ -37,7 +37,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         secure: false,
-        maxAge: 30 * 60 * 1000 // 30 Minuten
+        maxAge: 60 * 60 * 1000 // 60 Minuten
     } // auf true setzen, wenn https verwendet wird
 }));
 
@@ -46,10 +46,10 @@ let badPasswords = [];
 
 async function loadPasswords() {
     try {
-        goodPasswords = await dbHandler.getGoodPasswordsFromDB();
-        badPasswords = await dbHandler.getBadPasswordsFromDB();
-    } catch (error) {
-        console.error('Fehler beim Laden der Passwörter:', error);
+        data = fs.readFileSync('passwords.json', 'utf8');
+        console.log('Datei erfolgreich gelesen');
+    } catch (err) {
+        console.error('Fehler beim Lesen der Datei:', err);
     }
 }
 
@@ -99,6 +99,8 @@ app.post('/login', async (req, res) => {
             //req.session.loggedIn = true;
             const accessToken = jwt.sign(user, ACCESS_TOKEN_SECRET,  { expiresIn: '1h' })
             res.json({accessToken: accessToken, success: true})
+            res.status(200).send({message: 'Benutzer erfolgreich eingeloggt'});
+
         } else {
             // Passwörter stimmen nicht überein
             console.log('Ungültige Anmeldeinformationen')
@@ -136,7 +138,7 @@ app.post('/register', async (req, res) => {
         // Aufrufen der createUser Funktion aus db_handler.js
         dbHandler.createUser(newUser)
             .then(userId => {
-                res.status(201).send({message: 'Benutzer erfolgreich erstellt', userId: userId});
+                res.status(201).send({message: 'Benutzer erfolgreich erstellt'});
             })
             .catch(err => {
                 console.error(err);
@@ -165,8 +167,7 @@ app.get('/userdata', async (req, res) => {
 
 // Passwort Sortierer
 app.post('/passwords', (req, res) => {
-    let usedPasswords = [];
-    var password = getRandomPassword(goodPasswords, badPasswords, usedPasswords);
+    var password = getRandomPassword(goodPasswords, badPasswords);
     res.status(200).send(password);
 });
 function getRandomItem(array) {
@@ -174,14 +175,11 @@ function getRandomItem(array) {
     return array[randomIndex];
 }
 // Funktion, um ein zufälliges Passwort anzuzeigen
-function getRandomPassword(goodPasswords, badPasswords, usedPasswords) {
+function getRandomPassword(goodPasswords, badPasswords) {
     // 50% Chance, ein gutes oder schlechtes Passwort zu wählen
     const isGoodPassword = Math.random() < 0.5;
-    const password = isGoodPassword ? getRandomItem(goodPasswords) : getRandomItem(badPasswords);
-    if (password in usedPasswords) {
-        return getRandomPassword(goodPasswords, badPasswords, usedPasswords);
-    }
-    return password
+    return isGoodPassword ? getRandomItem(goodPasswords) : getRandomItem(badPasswords);
+
 }
 // Passwort Sortierer Punkte berechnen
 app.post('/solve', async (req, res) => {
@@ -405,7 +403,7 @@ app.post('/solvePSS', (req, res) => {
             dbHandler.getHSTwoByUsername(req.session.user.username)
             .then(highscore => {
                 if (highscore !== null) {
-                    console.log('Der aktuelle highscore ist:', highscore);
+                    console.log('Der aktuelle Highscore ist:', highscore);
                     if (highscore < req.session.points2) {
                         dbHandler.setHighScoreTwo(req.session.user.username, req.session.points2);
                     }

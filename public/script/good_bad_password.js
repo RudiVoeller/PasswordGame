@@ -71,28 +71,25 @@ async function solve(password, isGood) {
     });
 
     if (!response.ok) {
-
         throw new Error(`Fehler beim Senden der Daten: ${response.statusText}`);
       }
 
     const result = await response.json();
 
     if (result.correct) {
-        points++;
         document.getElementById('userinfo').style.color = "green";
-
         document.getElementById('userinfo').textContent = "Richtige Antwort!";
     }
     else {
-        points = 0;
         document.getElementById('userinfo').style.color = "red";
 
         document.getElementById('userinfo').visible = true;
         document.getElementById('userinfo').textContent = "Leider falsch! Sichere Passwörter enthalten mindestens 8 Zeichen, Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen. Unsichere erkennt man an häufigen Wörtern, Zahlenreihen oder dem Namen des Benutzers.";
     }
 
-    document.getElementById('current_score').textContent = points;
+    document.getElementById('current_score').textContent = result.points;
     loadUserData()
+
 }
 
 function onNextGame() {

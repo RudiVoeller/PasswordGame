@@ -40,24 +40,6 @@ function drop(ev) {
     createPassword()
 }
 
-function onRestart() {
-    var ele = document.getElementById('passwords');
-    var eleGood = document.getElementById("good-dropzone");
-    var eleBad = document.getElementById("bad-dropzone");
-
-    while (ele.hasChildNodes()) {
-        ele.removeChild(ele.firstChild);
-    }
-    while (eleGood.hasChildNodes()) {
-        eleGood.removeChild(eleGood.firstChild);
-    }
-    while (eleBad.hasChildNodes()) {
-        eleBad.removeChild(eleBad.firstChild);
-    }
-    document.getElementById('score').textContent = '';
-
-    createPassword();
-}
 
 function allowDrop(ev) {
     ev.preventDefault();
@@ -122,8 +104,6 @@ async function onReload() {
 
 // Logout
 function onLogout() {
-    // Entferne den JWT aus dem localStorage
-    //localStorage.removeItem('token');
 
     // Optional: Informiere den Server über den Logout
     fetch('/logout', {

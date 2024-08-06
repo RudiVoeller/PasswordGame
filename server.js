@@ -17,7 +17,8 @@ const authenticateToken = (req, res, next) => {
     if (token == null) return res.sendStatus(401); // Kein Token vorhanden
 
     if (blacklistedTokens.has(token)) {
-        return res.status(401).send('Token ist ungültig.');
+       return  res.sendFile(`${publicPath}/index.html`)
+
     }
 
     jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
@@ -46,10 +47,10 @@ let badPasswords = [];
 
 async function loadPasswords() {
     try {
-        data = fs.readFileSync('passwords.json', 'utf8');
-        console.log('Datei erfolgreich gelesen');
-    } catch (err) {
-        console.error('Fehler beim Lesen der Datei:', err);
+        goodPasswords = await dbHandler.getGoodPasswordsFromDB();
+        badPasswords = await dbHandler.getBadPasswordsFromDB();
+         } catch (error) {
+        console.error('Fehler beim Laden der Passwörter:', error);
     }
 }
 
@@ -96,10 +97,8 @@ app.post('/login', async (req, res) => {
             // Passwörter stimmen überein
             console.log(`Erfolgreich angemeldet als ${username}`)
             req.session.user = {username: username};
-            //req.session.loggedIn = true;
             const accessToken = jwt.sign(user, ACCESS_TOKEN_SECRET,  { expiresIn: '1h' })
             res.json({accessToken: accessToken, success: true})
-            res.status(200).send({message: 'Benutzer erfolgreich eingeloggt'});
 
         } else {
             // Passwörter stimmen nicht überein
@@ -334,7 +333,7 @@ function generateStrengthPasswords(level) {
         currentCharset += upper;
         currentCharset += symbol;
         passwords = generateGenericPassword(currentCharset, 10)
-    } else if (level === 10) {
+    } else if (level >= 10) {
         currentCharset = "";
         currentCharset += digits;
         currentCharset += lower;

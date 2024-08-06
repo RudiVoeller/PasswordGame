@@ -12,10 +12,3 @@ CREATE TABLE IF NOT EXISTS users (
     high_score_one INT DEFAULT 0,
     high_score_two INT DEFAULT 0
 );
-
--- Standardwerte in die Tabelle 'users' einfügen
-INSERT INTO users (username, password, high_score_one, high_score_two) VALUES
-('john_doe', 'password123', 10, 50),
-('jane_doe', 'password456', 20, 70),
-('alice',  'password789', 15, 60),
-('bob',  'password101', 25, 80);

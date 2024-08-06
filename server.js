@@ -4,7 +4,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
-// User funktionen zugänglich machen
+// Datenbank Funktionen zugänglich machen
 const dbHandler = require('./db_handler');
 
 // Server Token
@@ -13,8 +13,6 @@ const blacklistedTokens = new Set();
 
 // middleware Funktion zum Prüfen auf ein gültiges Token
 const authenticateToken = (req, res, next) => {
-    //const authHeader = req.headers['authorization'];
-    //const token = authHeader && authHeader.split(' ')[1];
     const token = req.query.token;
     if (token == null) return res.sendStatus(401); // Kein Token vorhanden
 
@@ -62,7 +60,6 @@ let privatePath = path.join(__dirname, 'private')
 let publicPath = path.join(__dirname, 'public')
 
 // App routing - offen
-// ======= >>
 app.get('/login', (req, res) => {
     res.sendFile(`${publicPath}/index.html`)
     console.log(req.url);
@@ -72,7 +69,6 @@ app.get('/register', (req, res) => {
     console.log(req.url);
 })
 // App routing - privat
-// ======= >>
 app.get('/good_bad_password', authenticateToken, (req, res) => {
     req.session.points = 0
     res.sendFile(`${privatePath}/good_bad_password.html`)
@@ -167,7 +163,6 @@ app.get('/userdata', async (req, res) => {
     }
 });
 
-//#region good_bad_password
 // Passwort Sortierer
 app.post('/passwords', (req, res) => {
     let usedPasswords = [];
@@ -269,7 +264,6 @@ app.post('/getScore', (req, res) => {
         res.json({points: 0, points2: 0});
     }
 });
-//#region password-strength-sim
 // Passwort Stärke Simulator
 // Passwörter an Client zurückgeben
 app.post('/getPSSPasswords', (req, res) => {
@@ -403,7 +397,7 @@ app.post('/solvePSS', (req, res) => {
     let korrekt = false;
 
     for (let i = 0; i < passwords.length; i++) {
-        // prüft ob die Zei +- 10% genau berechnet wurde
+        // prüft ob die Zeit +- 10% genau berechnet wurde
         if (getPasswordCrackTime(passwords[i]) >= (solveTime[i] * 0.9) && getPasswordCrackTime(passwords[i]) <= (solveTime[i] * 1.1)) {
             korrekt = true
             req.session.points2 = (req.session.points2 || 0) + 1;
@@ -421,7 +415,7 @@ app.post('/solvePSS', (req, res) => {
                 res.json({points: req.session.points2, korrekt: korrekt});
             })
         } else {
-            // Rekord in Datenbank speichern    
+            // Rekord in Datenbank speichern
             dbHandler.getHSTwoByUsername(req.session.user.username)
                 .then(highscore => {
                     if (highscore !== null) {
@@ -439,13 +433,12 @@ app.post('/solvePSS', (req, res) => {
         }
     // res.json({points: req.session.user.points2, korrekt: korrekt});
 });
-//#region Highscore
-// Route zum Abrufen der Daten
+// Route zum Abrufen der Daten für das Highscore-Board für Spiel eins
 app.get('/getScoresOne', async (req, res) => {
     const boardOne = await dbHandler.getLeaderboardOne()
     res.json(boardOne);
   })
-  // Route zum Abrufen der Daten
+  // Route zum Abrufen der Daten für das Highscore-Board für Spiel zwei
 app.get('/getScoresTwo', async (req, res) => {
     const boardTwo = await dbHandler.getLeaderboardTwo()
     res.json(boardTwo);

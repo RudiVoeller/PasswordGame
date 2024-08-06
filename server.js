@@ -39,7 +39,7 @@ app.use(session({
     cookie: {
         secure: false,
         maxAge: 60 * 60 * 1000 // 60 Minuten
-    } // auf true setzen, wenn https verwendet wird
+    }
 }));
 
 let goodPasswords = [];
@@ -428,7 +428,6 @@ app.post('/solvePSS', (req, res) => {
                 })
             }
         }
-    // res.json({points: req.session.user.points2, korrekt: korrekt});
 });
 // Route zum Abrufen der Daten für das Highscore-Board für Spiel eins
 app.get('/getScoresOne', async (req, res) => {

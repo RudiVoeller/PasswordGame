@@ -50,7 +50,6 @@ function generatePassword() {
 
 function updateDisplay() {
     const passwordDisplay = document.getElementById("passwordDisplay");
-    //passwordDisplay.innerText = `Aktuelles Passwort: ${password}`;
     updateStrength();
 }
 
@@ -123,8 +122,7 @@ async function getPSSPasswords() {
         document.getElementById('pw1value').textContent = data.passwords;
         document.getElementById('level').textContent = 'Level: ' + level
     }
-    //document.getElementById('score').textContent = result.points + " von 10 Punkten"; 
-    //document.getElementById('userinfo').textContent = "Automatisch generierter Text zur Verbesserung der Leistung des Spielers.";
+
 }
 
 async function onSolve() {
@@ -215,7 +213,6 @@ async function onLeaderboard() {
 // Logout
 function onLogout() {
     // Entferne den JWT aus dem localStorage
-    //localStorage.removeItem('token');
 
     // Optional: Informiere den Server über den Logout
     fetch('/logout', {

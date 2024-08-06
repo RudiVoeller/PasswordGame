@@ -62,7 +62,6 @@ function loadUserData() {
 // Logout
 function onLogout() {
     // Entferne den JWT aus dem localStorage
-    //localStorage.removeItem('token');
 
     // Optional: Informiere den Server über den Logout
     fetch('/logout', {
